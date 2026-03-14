@@ -37,7 +37,7 @@ import { createServerSupabase } from './supabase'
      return r.choices[0].message.content || 'No significant changes.'                                                                   
    }                                                                                                                                    
                                                                                                                                         
-   export async function runMonitorForCompetitor(competit orId: string) {                                                               
+   export async function runMonitorForCompetitor(competitorId: string) {                                                               
      const db = createServerSupabase()                                                                                                  
      const { data: competitor } = await db.from('competitors').select('* ').eq('id', competitorId).single()                             
      if (!competitor) throw new Error('Competitor not found')                                                                           
