@@ -69,7 +69,7 @@
            {changes.length === 0                                                                                                        
              ? <div className="bg-gray-900 border border-gray-800 rounded-xl p-10 text-center text-gray-500">No changes yet. Add        
  competitors to start monitoring.</div>                                                                                                 
-             : <div className="space-y-3">{changes.m ap((s: any) => (                                                                   
+             : <div className="space-y-3">{changes.map((s: any) => (                                                                   
                  <div key={s.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5">                                         
                    <div className="flex items-start justify-between mb-2">                                                              
                      <span className="font-medium">{s.competitors.name}</span>                                                          
