@@ -29,7 +29,7 @@
        setAdding(true)                                                                                                                  
        const { data: { user } } = await supabase.auth.getUser()                                                                         
        if (!user) return                                                                                                                
-       await supabase.from("competitors").ins ert({                                                                                     
+       await supabase.from("competitors").insert({                                                                                     
          user_id: user.id, name,                                                                                                        
          url: url.startsWith("http") ? url : "https://" + url,                                                                          
          status: "active",                                                                                                              
