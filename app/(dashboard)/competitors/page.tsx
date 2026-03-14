@@ -40,7 +40,7 @@
      }                                                                                                                                  
                                                                                                                                         
      async function del(id: string) {                                                                                                   
-       await supabase.from("competitors").del ete().eq("id", id)                                                                        
+       await supabase.from("competitors").delete().eq("id", id)                                                                        
        setCompetitors(p => p.filter(c => c.id !== id))                                                                                  
      }                                                                                                                                  
                                                                                                                                         
