@@ -28,8 +28,7 @@ import { createServerSupabase } from './supabase'
      const r = await openai.chat.completions.create({                                                                                   
        model: 'gpt-4o-mini',                                                                                                            
        messages: [                                                                                                                      
-         { role: 'system', content: 'You are a competitive intelligence analyst. Summarize competitor page changes concisely and        
- actionably.' },                                                                                                                        
+         { role: 'system', content: 'You are a competitive intelligence analyst. Summarize competitor page changes concisely and actionably.' },                                                                                                                        
          { role: 'user', content: `Competitor: ${name}\nPREVIOUS:\n${prev.slice(0, 3000)}\nCURRENT:\n${curr.slice(0, 3000)}\nWhat       
  changed and why does it matter?` },                                                                                                    
        ],                                                                                                                               
