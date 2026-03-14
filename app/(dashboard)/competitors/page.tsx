@@ -92,7 +92,7 @@
            </form>                                                                                                                      
            {loading ? <div className="text-gray-500 text-center py-10">Loading...</div>                                                 
              : competitors.length === 0 ? <div className="text-gray-500 text-center py-16">No competitors yet.</div>                    
-             : <div className="space-y-3">{competito rs.map(c => (                                                                      
+             : <div className="space-y-3">{competitors.map(c => (                                                                      
                  <div key={c.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex items-center justify-between gap-4"> 
                    <div className="min-w-0">                                                                                            
                      <div className="flex items-center gap-2 mb-1">                                                                     
