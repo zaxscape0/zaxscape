@@ -8,4 +8,4 @@ import Stripe from 'stripe'
      starter: { name: 'Starter', price: 99, priceId: process.env.STRIPE_PRICE_STARTER as string, competitorLimit: 3 },                  
      pro: { name: 'Pro', price: 199, priceId: process.env.STRIPE_PRICE_PRO as string, competitorLimit: 10 },                            
      team: { name: 'Team', price: 399, priceId: process.env.STRIPE_PRICE_TEAM as string, competitorLimit: 999 },                        
-   } 
+   }
