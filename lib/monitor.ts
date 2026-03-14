@@ -39,7 +39,7 @@ import { createServerSupabase } from './supabase'
                                                                                                                                         
    export async function runMonitorForCompetitor(competitorId: string) {                                                               
      const db = createServerSupabase()                                                                                                  
-     const { data: competitor } = await db.from('competitors').select('* ').eq('id', competitorId).single()                             
+     const { data: competitor } = await db.from('competitors').select('*').eq('id', competitorId).single()                             
      if (!competitor) throw new Error('Competitor not found')                                                                           
                                                                                                                                         
      const currentContent = await scrapeUrl(competitor.url)                                                                             

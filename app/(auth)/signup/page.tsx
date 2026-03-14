@@ -39,7 +39,7 @@
      if (done) return (                                                                                                                 
        <div className="text-center bg-gray-900 border border-gray-800 rounded-xl p-8">                                                  
          <h2 className="text-xl font-bold text-white mb-2">Check your email</h2>                                                        
-         <p className="text-gray-400">Confir mation sent to {email}</p>                                                                 
+         <p className="text-gray-400">Confirmation sent to {email}</p>                                                                 
        </div>                                                                                                                           
      )                                                                                                                                  
                                                                                                                                         

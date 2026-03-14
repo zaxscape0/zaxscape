@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
      const db = createServerSupabase()                                                                                                  
      const userId = req.headers.get('x-user-id')                                                                                        
      if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })                                                  
-     const { data, error } = await db.from('competitors').select('* ').eq('user_id', userId)                                            
+     const { data, error } = await db.from('competitors').select('*').eq('user_id', userId)                                            
      if (error) return NextResponse.json({ error: error.message }, { status: 500 })                                                     
      return NextResponse.json(data)                                                                                                     
    }                                                                                                                                    
