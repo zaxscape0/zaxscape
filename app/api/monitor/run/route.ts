@@ -8,7 +8,7 @@
        const { competitorId } = await req.json()                                                                                        
        if (!competitorId) return NextResponse.json({ error: 'Missing competitorId' }, { status: 400 })                                  
                                                                                                                                         
-       const result = await runMonitorForCompetitor(competit orId)                                                                      
+       const result = await runMonitorForCompetitor(competitorId)                                                                      
                                                                                                                                         
        if (result.hasChanged && result.changesDetected) {                                                                               
          const db = createServerSupabase()                                                                                              

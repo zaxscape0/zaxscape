@@ -19,7 +19,7 @@
      async function load() {                                                                                                            
        const { data: { user } } = await supabase.auth.getUser()                                                                         
        if (!user) { router.push("/login"); return }                                                                                     
-       const { data } = await supabase.from("competitors").sel ect("*").order("created_at", { ascending: false })                       
+       const { data } = await supabase.from("competitors").select("*").order("created_at", { ascending: false })                       
        setCompetitors(data || [])                                                                                                       
        setLoading(false)                                                                                                                
      }                                                                                                                                  

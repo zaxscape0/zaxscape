@@ -16,8 +16,8 @@
      async function load() {                                                                                                            
        const { data: { user } } = await supabase.auth.getUser()                                                                         
        if (!user) { router.push("/login"); return }                                                                                     
-       const { data: c } = await supabase.from("competitors").sel ect("*").order("created_at", { ascending: false })                    
-       const { data: s } = await supabase.from("snapshots").selec t("*, competitors(name,url)")                                         
+       const { data: c } = await supabase.from("competitors").select("*").order("created_at", { ascending: false })                    
+       const { data: s } = await supabase.from("snapshots").select("*, competitors(name,url)")                                         
          .not("changes_detected", "is", null).order("scanned_at", { ascending: false }).limit(5)                                        
        setCompetitors(c || [])                                                                                                          
        setChanges(s || [])                                                                                                              

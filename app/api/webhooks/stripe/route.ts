@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
                                                                                                                                         
      let event: any                                                                                                                     
      try {                                                                                                                              
-       event = stripe.webhooks.constructEvent(b ody, sig, process.env.STRIPE_WEBHOOK_SECRET || '')                                      
+       event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET || '')                                      
      } catch {                                                                                                                          
        return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })                                                        
      }                                                                                                                                  
