@@ -4,6 +4,12 @@ import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { useRouter, useSearchParams } from "next/navigation"
 
+const PLANS = [
+  { id: "starter", name: "Starter", price: "$99/mo", features: "3 competitors" },
+  { id: "pro", name: "Pro", price: "$199/mo", features: "10 competitors" },
+  { id: "team", name: "Team", price: "$399/mo", features: "Unlimited" },
+]
+
 function SignupForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -12,7 +18,7 @@ function SignupForm() {
   const [done, setDone] = useState(false)
   const router = useRouter()
   const params = useSearchParams()
-  const plan = params.get("plan") || "starter"
+  const [plan, setPlan] = useState(params.get("plan") || "starter")
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -50,18 +56,39 @@ function SignupForm() {
           <span style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", color: "#ff6666" }}>{error}</span>
         </div>
       )}
+
       <div style={{ marginBottom: "20px" }}>
         <label className="zax-label">Email</label>
         <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@company.com" className="zax-input" />
       </div>
-      <div style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: "32px" }}>
         <label className="zax-label">Password</label>
         <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} placeholder="Min 8 characters" className="zax-input" />
       </div>
-      <div style={{ background: "#0a0a0a", border: "1px solid #222", padding: "12px 16px", marginBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: "#666" }}>Selected plan</span>
-        <span style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", color: "#fff", textTransform: "uppercase" }}>{plan}</span>
+
+      {/* Plan selector */}
+      <div style={{ marginBottom: "32px" }}>
+        <label className="zax-label">Select plan</label>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1px", background: "#222" }}>
+          {PLANS.map(p => (
+            <button key={p.id} type="button" onClick={() => setPlan(p.id)}
+              style={{
+                background: plan === p.id ? "#fff" : "#000",
+                color: plan === p.id ? "#000" : "#666",
+                border: "none",
+                padding: "16px 12px",
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "background 0.15s, color 0.15s",
+              }}>
+              <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "6px", color: plan === p.id ? "#000" : "#666" }}>{p.name}</div>
+              <div style={{ fontSize: "16px", fontWeight: 700, letterSpacing: "-0.01em", color: plan === p.id ? "#000" : "#fff", marginBottom: "4px" }}>{p.price}</div>
+              <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", color: plan === p.id ? "#444" : "#444" }}>{p.features}</div>
+            </button>
+          ))}
+        </div>
       </div>
+
       <button type="submit" disabled={loading} className="zax-btn zax-btn-primary" style={{ width: "100%", textAlign: "center" }}>
         {loading ? "Creating account..." : "Create account →"}
       </button>
@@ -72,7 +99,7 @@ function SignupForm() {
 export default function SignupPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#000", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
-      <div style={{ width: "100%", maxWidth: "400px" }}>
+      <div style={{ width: "100%", maxWidth: "440px" }}>
         <div style={{ borderBottom: "1px solid #222", paddingBottom: "24px", marginBottom: "40px" }}>
           <div style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// zaxscape</div>
           <Link href="/"><img src="/logo.jpg" alt="ZaxScape" style={{ height: "73px", display: "block" }} /></Link>
