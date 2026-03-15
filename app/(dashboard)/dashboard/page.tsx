@@ -52,7 +52,7 @@ export default function DashboardPage() {
       <nav style={{ borderBottom: "1px solid #222", padding: "0 40px" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: "60px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
-            <Link href="/dashboard"><img src="/logo.jpg" alt="ZaxScape" style={{ height: "32px", display: "block" }} /></Link>
+            <Link href="/dashboard"><img src="/logo.jpg" alt="ZaxScape" style={{ height: "48px", display: "block" }} /></Link>
             <Link href="/dashboard" style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#fff", textDecoration: "none" }}>Dashboard</Link>
             <Link href="/competitors" style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#666", textDecoration: "none" }}>Competitors</Link>
           </div>
