@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase'
 
 export async function GET() {
-  const db = createServerSupabase()
-  const { data, error } = await db.from('competitors').select('id, name').limit(5)
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
   return NextResponse.json({
-    hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-    keyPrefix: process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 20),
-    competitors: data,
-    error: error?.message
+    length: key.length,
+    hasNewline: key.includes('\n'),
+    hasCarriageReturn: key.includes('\r'),
+    hasSpace: key.includes(' '),
+    first30: key.slice(0, 30),
+    last30: key.slice(-30),
+    charCodesAround210: Array.from(key.slice(205, 220)).map(c => c.charCodeAt(0))
   })
 }
