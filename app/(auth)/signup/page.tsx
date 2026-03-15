@@ -75,7 +75,7 @@ export default function SignupPage() {
       <div style={{ width: "100%", maxWidth: "400px" }}>
         <div style={{ borderBottom: "1px solid #222", paddingBottom: "24px", marginBottom: "40px" }}>
           <div style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// zaxscape</div>
-          <Link href="/"><img src="/logo.jpg" alt="ZaxScape" style={{ height: "56px", display: "block" }} /></Link>
+          <Link href="/"><img src="/logo.jpg" alt="ZaxScape" style={{ height: "73px", display: "block" }} /></Link>
         </div>
 
         <div style={{ marginBottom: "32px" }}>
