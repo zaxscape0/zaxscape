@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
-import { Plus, Bell, BarChart3, Clock, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
@@ -12,7 +11,6 @@ export default function DashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    // Wait for auth state to settle (handles post-Stripe redirect)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || (!session && event !== "INITIAL_SESSION")) {
         router.push("/login")
@@ -20,7 +18,6 @@ export default function DashboardPage() {
         loadData()
       }
     })
-    // Also try loading immediately in case session is already there
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) loadData()
       else setTimeout(() => {
@@ -35,63 +32,94 @@ export default function DashboardPage() {
   async function loadData() {
     const { data: c } = await supabase.from("competitors").select("*").order("created_at", { ascending: false })
     const { data: s } = await supabase.from("snapshots").select("*, competitors(name,url)")
-      .not("changes_detected", "is", null).order("scanned_at", { ascending: false }).limit(5)
+      .not("changes_detected", "is", null).order("scanned_at", { ascending: false }).limit(10)
     setCompetitors(c || [])
     setChanges(s || [])
     setLoading(false)
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-      <div className="text-teal-400 animate-pulse">Loading...</div>
+    <div style={{ minHeight: "100vh", background: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <span style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", color: "#444", letterSpacing: "0.1em" }}>loading...</span>
     </div>
   )
 
+  const active = competitors.filter(c => c.status === "active").length
+
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
-        <span className="text-xl font-bold text-teal-400">ZaxScape</span>
-        <div className="flex gap-4 items-center">
-          <Link href="/competitors" className="text-gray-400 hover:text-white text-sm">Competitors</Link>
+    <div style={{ minHeight: "100vh", background: "#000", color: "#fff" }}>
+      {/* Nav */}
+      <nav style={{ borderBottom: "1px solid #222", padding: "0 40px" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: "60px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
+            <span style={{ fontWeight: 700, fontSize: "16px", letterSpacing: "-0.02em" }}>ZAXSCAPE</span>
+            <Link href="/dashboard" style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#fff", textDecoration: "none" }}>Dashboard</Link>
+            <Link href="/competitors" style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#666", textDecoration: "none" }}>Competitors</Link>
+          </div>
           <button onClick={async () => { await supabase.auth.signOut(); router.push("/login") }}
-            className="text-gray-500 hover:text-white"><LogOut className="w-4 h-4" /></button>
+            style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#444", background: "none", border: "none", cursor: "pointer" }}>
+            Sign out
+          </button>
         </div>
       </nav>
-      <main className="max-w-6xl mx-auto px-6 py-10">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <Link href="/competitors" className="flex items-center gap-2 bg-teal-500 hover:bg-teal-400 text-white px-4 py-2 rounded-lg text-sm font-medium">
-            <Plus className="w-4 h-4" />Add competitor
-          </Link>
+
+      <main style={{ maxWidth: "1100px", margin: "0 auto", padding: "60px 40px" }}>
+        {/* Header */}
+        <div style={{ borderBottom: "1px solid #222", paddingBottom: "40px", marginBottom: "60px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+          <div>
+            <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// overview</div>
+            <h1 style={{ fontSize: "36px", fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>Dashboard</h1>
+          </div>
+          <Link href="/competitors" className="zax-btn zax-btn-primary">+ Add competitor</Link>
         </div>
-        <div className="grid grid-cols-3 gap-4 mb-10">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <div className="flex items-center gap-2 mb-2"><BarChart3 className="w-5 h-5 text-teal-400" /><span className="text-gray-400 text-sm">Monitored</span></div>
-            <div className="text-2xl font-bold">{competitors.filter(c => c.status === "active").length}</div>
+
+        {/* Stats */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1px", background: "#222", marginBottom: "60px" }}>
+          <div style={{ background: "#000", padding: "32px" }}>
+            <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#444", marginBottom: "16px" }}>01 — monitored</div>
+            <div style={{ fontSize: "48px", fontWeight: 700, letterSpacing: "-0.02em" }}>{active}</div>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <div className="flex items-center gap-2 mb-2"><Bell className="w-5 h-5 text-teal-400" /><span className="text-gray-400 text-sm">Changes this week</span></div>
-            <div className="text-2xl font-bold">{changes.length}</div>
+          <div style={{ background: "#000", padding: "32px" }}>
+            <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#444", marginBottom: "16px" }}>02 — changes detected</div>
+            <div style={{ fontSize: "48px", fontWeight: 700, letterSpacing: "-0.02em" }}>{changes.length}</div>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <div className="flex items-center gap-2 mb-2"><Clock className="w-5 h-5 text-teal-400" /><span className="text-gray-400 text-sm">Last scan</span></div>
-            <div className="text-2xl font-bold">{competitors[0]?.last_scanned_at ? new Date(competitors[0].last_scanned_at).toLocaleDateString() : "Never"}</div>
+          <div style={{ background: "#000", padding: "32px" }}>
+            <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#444", marginBottom: "16px" }}>03 — last scan</div>
+            <div style={{ fontSize: "24px", fontWeight: 700, letterSpacing: "-0.02em" }}>
+              {competitors[0]?.last_scanned_at ? new Date(competitors[0].last_scanned_at).toLocaleDateString() : "—"}
+            </div>
           </div>
         </div>
-        <h2 className="text-lg font-semibold mb-4">Recent Changes</h2>
-        {changes.length === 0
-          ? <div className="bg-gray-900 border border-gray-800 rounded-xl p-10 text-center text-gray-500">No changes yet. Add competitors to start monitoring.</div>
-          : <div className="space-y-3">{changes.map((s: any) => (
-              <div key={s.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-                <div className="flex items-start justify-between mb-2">
-                  <span className="font-medium">{s.competitors.name}</span>
-                  <span className="text-gray-500 text-xs">{new Date(s.scanned_at).toLocaleDateString()}</span>
+
+        {/* Recent Changes */}
+        <div>
+          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "24px" }}>// recent changes</div>
+          {changes.length === 0 ? (
+            <div style={{ border: "1px solid #222", padding: "60px", textAlign: "center" }}>
+              <div style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#444", marginBottom: "16px" }}>// no changes detected yet</div>
+              <p style={{ color: "#666", margin: "0 0 24px", fontSize: "15px" }}>Add competitors to start monitoring.</p>
+              <Link href="/competitors" className="zax-btn zax-btn-secondary">Add competitor →</Link>
+            </div>
+          ) : (
+            <div style={{ border: "1px solid #222" }}>
+              {changes.map((s: any, i: number) => (
+                <div key={s.id} style={{ padding: "24px 32px", borderBottom: i < changes.length - 1 ? "1px solid #1a1a1a" : "none" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+                    <div>
+                      <span style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: "#666", marginRight: "16px" }}>{s.competitors?.name}</span>
+                    </div>
+                    <span style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#444" }}>{new Date(s.scanned_at).toLocaleDateString()}</span>
+                  </div>
+                  <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6, margin: "0 0 12px" }}>{s.changes_detected?.summary}</p>
+                  <a href={s.competitors?.url} target="_blank" rel="noopener noreferrer"
+                    style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#555", textDecoration: "none" }}>
+                    View site →
+                  </a>
                 </div>
-                <p className="text-gray-400 text-sm">{s.changes_detected?.summary}</p>
-                <a href={s.competitors.url} target="_blank" rel="noopener noreferrer" className="text-teal-400 text-xs mt-2 inline-block hover:underline">View page</a>
-              </div>
-            ))}</div>
-        }
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   )
