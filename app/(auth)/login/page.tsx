@@ -26,7 +26,7 @@ export default function LoginPage() {
         {/* Header */}
         <div style={{ borderBottom: "1px solid #222", paddingBottom: "24px", marginBottom: "40px" }}>
           <div style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// zaxscape</div>
-          <Link href="/" style={{ fontSize: "24px", fontWeight: 700, color: "#fff", textDecoration: "none", letterSpacing: "-0.02em" }}>ZAXSCAPE</Link>
+          <Link href="/"><img src="/logo.jpg" alt="ZaxScape" style={{ height: "40px", display: "block" }} /></Link>
         </div>
 
         <div style={{ marginBottom: "32px" }}>
