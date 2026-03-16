@@ -6,13 +6,21 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY as string })
 // Common careers page URL patterns to try
 function getCareersUrls(baseUrl: string): string[] {
   const domain = baseUrl.replace(/https?:\/\//, '').replace(/\/.*/, '')
+  // Strip www and common subdomains to get root domain
+  const rootDomain = domain.replace(/^www\./, '')
   return [
     `https://${domain}/careers`,
+    `https://www.${rootDomain}/careers`,
     `https://${domain}/jobs`,
     `https://${domain}/about/careers`,
     `https://${domain}/company/careers`,
-    `https://${domain}/work-with-us`,
+    `https://${domain}/en/careers`,
+    `https://${domain}/careers/jobs`,
+    `https://${domain}/work-here`,
     `https://${domain}/join-us`,
+    `https://${domain}/work-with-us`,
+    `https://jobs.${rootDomain}`,
+    `https://careers.${rootDomain}`,
   ]
 }
 
@@ -20,7 +28,8 @@ async function scrapeJobs(url: string): Promise<string> {
   try {
     const r = await fetch(url, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ZaxScapeBot/1.0)' },
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(15000),
+      redirect: 'follow',
     })
     if (!r.ok) return ''
     const html = await r.text()
