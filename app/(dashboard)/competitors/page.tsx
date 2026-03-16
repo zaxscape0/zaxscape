@@ -30,12 +30,22 @@ export default function CompetitorsPage() {
     setError("")
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    const { error: err } = await supabase.from("competitors").insert({
-      user_id: user.id, name,
-      url: url.startsWith("http") ? url : "https://" + url,
-      status: "active",
+    const res = await fetch("/api/competitors", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        url: url.startsWith("http") ? url : "https://" + url,
+        user_id: user.id,
+        email: user.email,
+      }),
     })
-    if (err) { setError(err.message); setAdding(false); return }
+    const data = await res.json()
+    if (!res.ok) {
+      setError(data.error || "Failed to add competitor")
+      setAdding(false)
+      return
+    }
     setName(""); setUrl("")
     load()
     setAdding(false)
