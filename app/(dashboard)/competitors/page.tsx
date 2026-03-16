@@ -121,7 +121,7 @@ export default function CompetitorsPage() {
             {competitors.map((c: any, i: number) => (
               <div key={c.id} style={{ padding: "24px 32px", borderBottom: i < competitors.length - 1 ? "1px solid #1a1a1a" : "none", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: "16px", marginBottom: "4px" }}>{c.name}</div>
+                  <Link href={`/competitors/${c.id}`} style={{ fontWeight: 600, fontSize: "16px", marginBottom: "4px", color: "#fff", textDecoration: "none", display: "block" }}>{c.name} →</Link>
                   <a href={c.url} target="_blank" rel="noopener noreferrer"
                     style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#555", textDecoration: "none" }}>{c.url}</a>
                   {c.last_scanned_at && (

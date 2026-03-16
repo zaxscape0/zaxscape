@@ -52,3 +52,61 @@ create table if not exists profiles (
    );                                                                                                                                   
    create policy "Service inserts snapshots" on snapshots for insert with check (true);                                                 
    create policy "Service updates competitors" on competitors for update using (true);
+
+-- Job postings table
+create table if not exists job_postings (
+  id uuid default gen_random_uuid() primary key,
+  competitor_id uuid references competitors(id) on delete cascade,
+  title text not null,
+  department text,
+  location text,
+  url text,
+  signal text, -- AI-generated strategic signal
+  first_seen_at timestamp with time zone default now(),
+  last_seen_at timestamp with time zone default now(),
+  is_new boolean default true
+);
+
+-- Reviews table
+create table if not exists reviews (
+  id uuid default gen_random_uuid() primary key,
+  competitor_id uuid references competitors(id) on delete cascade,
+  source text not null, -- g2, capterra, trustpilot
+  rating numeric,
+  title text,
+  body text,
+  sentiment text, -- positive, negative, neutral
+  pain_point text, -- AI extracted pain point
+  reviewer_role text,
+  published_at timestamp with time zone,
+  fetched_at timestamp with time zone default now()
+);
+
+-- Battlecards table
+create table if not exists battlecards (
+  id uuid default gen_random_uuid() primary key,
+  competitor_id uuid references competitors(id) on delete cascade,
+  content jsonb, -- structured battlecard data
+  generated_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
+alter table job_postings enable row level security;
+alter table reviews enable row level security;
+alter table battlecards enable row level security;
+
+create policy "Users view job_postings" on job_postings for select using (
+  competitor_id in (select id from competitors where user_id = auth.uid())
+);
+create policy "Service inserts job_postings" on job_postings for insert with check (true);
+create policy "Service updates job_postings" on job_postings for update using (true);
+
+create policy "Users view reviews" on reviews for select using (
+  competitor_id in (select id from competitors where user_id = auth.uid())
+);
+create policy "Service inserts reviews" on reviews for insert with check (true);
+
+create policy "Users view battlecards" on battlecards for select using (
+  competitor_id in (select id from competitors where user_id = auth.uid())
+);
+create policy "Service upserts battlecards" on battlecards for all using (true);
