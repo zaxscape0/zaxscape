@@ -69,7 +69,7 @@ export default function CompetitorsPage() {
 
   if (loading) return (
     <div style={{ minHeight: "100vh", background: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <span style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", color: "#444", letterSpacing: "0.1em" }}>loading...</span>
+      <span style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", color: "#777", letterSpacing: "0.1em" }}>loading...</span>
     </div>
   )
 
@@ -80,11 +80,11 @@ export default function CompetitorsPage() {
         <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: "60px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
             <Link href="/dashboard"><img src="/logo.jpg" alt="ZaxScape" style={{ height: "62px", display: "block" }} /></Link>
-            <Link href="/dashboard" style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#666", textDecoration: "none" }}>Dashboard</Link>
+            <Link href="/dashboard" style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#999", textDecoration: "none" }}>Dashboard</Link>
             <Link href="/competitors" style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#fff", textDecoration: "none" }}>Competitors</Link>
           </div>
           <button onClick={async () => { await supabase.auth.signOut(); router.push("/login") }}
-            style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#444", background: "none", border: "none", cursor: "pointer" }}>
+            style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#777", background: "none", border: "none", cursor: "pointer" }}>
             Sign out
           </button>
         </div>
@@ -93,13 +93,13 @@ export default function CompetitorsPage() {
       <main style={{ maxWidth: "1100px", margin: "0 auto", padding: "60px 40px" }}>
         {/* Header */}
         <div style={{ borderBottom: "1px solid #222", paddingBottom: "40px", marginBottom: "60px" }}>
-          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// tracking</div>
+          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#999", marginBottom: "8px" }}>// tracking</div>
           <h1 style={{ fontSize: "36px", fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>Competitors</h1>
         </div>
 
         {/* Add form */}
         <div style={{ border: "1px solid #222", padding: "32px", marginBottom: "48px" }}>
-          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "24px" }}>// add competitor</div>
+          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#999", marginBottom: "24px" }}>// add competitor</div>
           {error && (
             <div style={{ background: "#0a0a0a", border: "1px solid #ff4444", padding: "12px 16px", marginBottom: "20px" }}>
               <span style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", color: "#ff6666" }}>{error}</span>
@@ -121,10 +121,10 @@ export default function CompetitorsPage() {
         </div>
 
         {/* Competitors list */}
-        <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "16px" }}>// monitoring {competitors.length} competitor{competitors.length !== 1 ? "s" : ""}</div>
+        <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#999", marginBottom: "16px" }}>// monitoring {competitors.length} competitor{competitors.length !== 1 ? "s" : ""}</div>
         {competitors.length === 0 ? (
           <div style={{ border: "1px solid #222", padding: "60px", textAlign: "center" }}>
-            <p style={{ color: "#666", margin: 0, fontSize: "15px" }}>No competitors added yet.</p>
+            <p style={{ color: "#999", margin: 0, fontSize: "15px" }}>No competitors added yet.</p>
           </div>
         ) : (
           <div style={{ border: "1px solid #222" }}>
@@ -133,9 +133,9 @@ export default function CompetitorsPage() {
                 <div>
                   <Link href={`/competitors/${c.id}`} style={{ fontWeight: 600, fontSize: "16px", marginBottom: "4px", color: "#fff", textDecoration: "none", display: "block" }}>{c.name} →</Link>
                   <a href={c.url} target="_blank" rel="noopener noreferrer"
-                    style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#555", textDecoration: "none" }}>{c.url}</a>
+                    style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#888", textDecoration: "none" }}>{c.url}</a>
                   {c.last_scanned_at && (
-                    <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", color: "#444", marginTop: "4px" }}>
+                    <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", color: "#777", marginTop: "4px" }}>
                       Last scan: {new Date(c.last_scanned_at).toLocaleDateString()}
                     </div>
                   )}
@@ -146,7 +146,7 @@ export default function CompetitorsPage() {
                     {scanning === c.id ? "Scanning..." : "Scan now"}
                   </button>
                   <button onClick={() => del(c.id)}
-                    style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: "#444", background: "none", border: "none", cursor: "pointer" }}>
+                    style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: "#777", background: "none", border: "none", cursor: "pointer" }}>
                     Remove
                   </button>
                 </div>

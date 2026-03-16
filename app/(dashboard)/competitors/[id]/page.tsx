@@ -49,10 +49,10 @@ export default function CompetitorDetailPage() {
     load()
   }
 
-  if (loading) return <div style={{ minHeight: "100vh", background: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontFamily: "monospace", fontSize: "12px", color: "#444" }}>loading...</span></div>
+  if (loading) return <div style={{ minHeight: "100vh", background: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontFamily: "monospace", fontSize: "12px", color: "#777" }}>loading...</span></div>
 
   const m = { fontFamily: "'Courier New', monospace" }
-  const lbl: any = { ...m, fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "24px" }
+  const lbl: any = { ...m, fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#999", marginBottom: "24px" }
   const TABS: { id: Tab; label: string; count?: number }[] = [
     { id: "overview", label: "Changes", count: snapshots.length },
     { id: "jobs", label: "Job Postings", count: jobs.length },
@@ -65,18 +65,18 @@ export default function CompetitorDetailPage() {
         <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: "60px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
             <Link href="/dashboard"><img src="/logo.jpg" alt="ZaxScape" style={{ height: "48px" }} /></Link>
-            <Link href="/dashboard" style={{ ...m, fontSize: "11px", textTransform: "uppercase", color: "#666", textDecoration: "none" }}>Dashboard</Link>
+            <Link href="/dashboard" style={{ ...m, fontSize: "11px", textTransform: "uppercase", color: "#999", textDecoration: "none" }}>Dashboard</Link>
             <Link href="/competitors" style={{ ...m, fontSize: "11px", textTransform: "uppercase", color: "#fff", textDecoration: "none" }}>Competitors</Link>
           </div>
-          <button onClick={async () => { await supabase.auth.signOut(); router.push("/login") }} style={{ ...m, fontSize: "11px", textTransform: "uppercase", color: "#444", background: "none", border: "none", cursor: "pointer" }}>Sign out</button>
+          <button onClick={async () => { await supabase.auth.signOut(); router.push("/login") }} style={{ ...m, fontSize: "11px", textTransform: "uppercase", color: "#777", background: "none", border: "none", cursor: "pointer" }}>Sign out</button>
         </div>
       </nav>
       <main style={{ maxWidth: "1100px", margin: "0 auto", padding: "60px 40px" }}>
         <div style={{ borderBottom: "1px solid #222", paddingBottom: "32px", marginBottom: "40px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
           <div>
-            <Link href="/competitors" style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#444", textDecoration: "none" }}>← Back</Link>
+            <Link href="/competitors" style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#777", textDecoration: "none" }}>← Back</Link>
             <h1 style={{ fontSize: "36px", fontWeight: 700, margin: "8px 0 4px", letterSpacing: "-0.02em" }}>{competitor.name}</h1>
-            <a href={competitor.url} target="_blank" rel="noopener noreferrer" style={{ ...m, fontSize: "11px", color: "#555", textDecoration: "none" }}>{competitor.url}</a>
+            <a href={competitor.url} target="_blank" rel="noopener noreferrer" style={{ ...m, fontSize: "11px", color: "#888", textDecoration: "none" }}>{competitor.url}</a>
           </div>
           <div style={{ display: "flex", gap: "12px" }}>
             <button onClick={() => runScan("monitor")} disabled={!!scanning} className="zax-btn zax-btn-secondary" style={{ fontSize: "11px", padding: "8px 16px" }}>{scanning === "monitor" ? "Scanning..." : "Scan site"}</button>
@@ -95,14 +95,14 @@ export default function CompetitorDetailPage() {
           <div>
             <div style={lbl}>// detected changes</div>
             {snapshots.length === 0
-              ? <div style={{ border: "1px solid #222", padding: "60px", textAlign: "center" }}><p style={{ color: "#666", margin: 0 }}>No changes yet. Run a scan.</p></div>
+              ? <div style={{ border: "1px solid #222", padding: "60px", textAlign: "center" }}><p style={{ color: "#999", margin: 0 }}>No changes yet. Run a scan.</p></div>
               : <div style={{ border: "1px solid #222" }}>{snapshots.map((s, i) => (
                   <div key={s.id} style={{ padding: "24px 32px", borderBottom: i < snapshots.length - 1 ? "1px solid #1a1a1a" : "none" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                      <span style={{ ...m, fontSize: "10px", color: "#444" }}>CHANGE DETECTED</span>
-                      <span style={{ ...m, fontSize: "11px", color: "#444" }}>{new Date(s.scanned_at).toLocaleDateString()}</span>
+                      <span style={{ ...m, fontSize: "10px", color: "#777" }}>CHANGE DETECTED</span>
+                      <span style={{ ...m, fontSize: "11px", color: "#777" }}>{new Date(s.scanned_at).toLocaleDateString()}</span>
                     </div>
-                    <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6, margin: 0 }}>{s.changes_detected?.summary}</p>
+                    <p style={{ color: "#bbb", fontSize: "14px", lineHeight: 1.6, margin: 0 }}>{s.changes_detected?.summary}</p>
                   </div>
                 ))}</div>
             }
@@ -113,13 +113,13 @@ export default function CompetitorDetailPage() {
             <div style={lbl}>// job postings — strategic hiring signals</div>
             {jobs.length === 0
               ? <div style={{ border: "1px solid #222", padding: "60px", textAlign: "center" }}>
-                  <p style={{ color: "#666", margin: "0 0 24px" }}>No job postings found yet.</p>
+                  <p style={{ color: "#999", margin: "0 0 24px" }}>No job postings found yet.</p>
                   <button onClick={() => runScan("jobs")} className="zax-btn zax-btn-secondary" disabled={!!scanning}>{scanning ? "Scanning..." : "Scan careers page"}</button>
                 </div>
               : <div>
                   {jobs.find((j: any) => j.signal) && (
                     <div style={{ background: "#0a0a0a", border: "1px solid #333", padding: "24px", marginBottom: "24px" }}>
-                      <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#666", marginBottom: "12px" }}>// strategic signal</div>
+                      <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#999", marginBottom: "12px" }}>// strategic signal</div>
                       <p style={{ color: "#ccc", fontSize: "15px", lineHeight: 1.6, margin: 0 }}>{(jobs.find((j: any) => j.signal) as any)?.signal}</p>
                     </div>
                   )}
@@ -130,9 +130,9 @@ export default function CompetitorDetailPage() {
                           <span style={{ fontWeight: 600, fontSize: "15px" }}>{j.title}</span>
                           {j.is_new && <span style={{ ...m, fontSize: "9px", textTransform: "uppercase", background: "#fff", color: "#000", padding: "2px 6px" }}>NEW</span>}
                         </div>
-                        <span style={{ ...m, fontSize: "10px", color: "#444" }}>{j.department}{j.location ? ` · ${j.location}` : ""}</span>
+                        <span style={{ ...m, fontSize: "10px", color: "#777" }}>{j.department}{j.location ? ` · ${j.location}` : ""}</span>
                       </div>
-                      <span style={{ ...m, fontSize: "10px", color: "#333" }}>{new Date(j.first_seen_at).toLocaleDateString()}</span>
+                      <span style={{ ...m, fontSize: "10px", color: "#666" }}>{new Date(j.first_seen_at).toLocaleDateString()}</span>
                     </div>
                   ))}</div>
                 </div>
@@ -144,13 +144,13 @@ export default function CompetitorDetailPage() {
             <div style={lbl}>// customer reviews — their weaknesses are your opportunities</div>
             {reviews.length === 0
               ? <div style={{ border: "1px solid #222", padding: "60px", textAlign: "center" }}>
-                  <p style={{ color: "#666", margin: "0 0 24px" }}>No reviews yet.</p>
+                  <p style={{ color: "#999", margin: "0 0 24px" }}>No reviews yet.</p>
                   <button onClick={() => runScan("reviews")} className="zax-btn zax-btn-secondary" disabled={!!scanning}>{scanning ? "Gathering..." : "Gather reviews"}</button>
                 </div>
               : <div>
                   {reviews.filter((r: any) => r.sentiment === "negative" && r.pain_point).length > 0 && (
                     <div style={{ background: "#0a0a0a", border: "1px solid #333", padding: "24px", marginBottom: "24px" }}>
-                      <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#666", marginBottom: "16px" }}>// pain points to use in sales</div>
+                      <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#999", marginBottom: "16px" }}>// pain points to use in sales</div>
                       {reviews.filter((r: any) => r.sentiment === "negative" && r.pain_point).slice(0, 4).map((r: any, i: number) => (
                         <div key={i} style={{ color: "#ccc", fontSize: "14px", lineHeight: 1.6, marginBottom: "8px" }}>— {r.pain_point}</div>
                       ))}
@@ -161,12 +161,12 @@ export default function CompetitorDetailPage() {
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                           <span style={{ ...m, fontSize: "9px", textTransform: "uppercase", padding: "2px 8px", border: "1px solid", borderColor: r.sentiment === "negative" ? "#f44" : r.sentiment === "positive" ? "#4f4" : "#444", color: r.sentiment === "negative" ? "#f66" : r.sentiment === "positive" ? "#6f6" : "#666" }}>{r.sentiment}</span>
-                          <span style={{ ...m, fontSize: "10px", color: "#444", textTransform: "uppercase" }}>{r.source}</span>
+                          <span style={{ ...m, fontSize: "10px", color: "#777", textTransform: "uppercase" }}>{r.source}</span>
                         </div>
-                        {r.reviewer_role && <span style={{ ...m, fontSize: "10px", color: "#444" }}>{r.reviewer_role}</span>}
+                        {r.reviewer_role && <span style={{ ...m, fontSize: "10px", color: "#777" }}>{r.reviewer_role}</span>}
                       </div>
                       {r.title && <div style={{ fontWeight: 600, marginBottom: "6px", fontSize: "14px" }}>{r.title}</div>}
-                      <p style={{ color: "#888", fontSize: "13px", lineHeight: 1.6, margin: 0 }}>{r.body}</p>
+                      <p style={{ color: "#bbb", fontSize: "13px", lineHeight: 1.6, margin: 0 }}>{r.body}</p>
                     </div>
                   ))}</div>
                 </div>
@@ -178,33 +178,33 @@ export default function CompetitorDetailPage() {
             <div style={lbl}>// battlecard — how to beat {competitor.name}</div>
             {!battlecard
               ? <div style={{ border: "1px solid #222", padding: "60px", textAlign: "center" }}>
-                  <p style={{ color: "#666", margin: "0 0 24px" }}>No battlecard yet. Gather intel first.</p>
+                  <p style={{ color: "#999", margin: "0 0 24px" }}>No battlecard yet. Gather intel first.</p>
                   <button onClick={() => runScan("battlecard")} className="zax-btn zax-btn-primary" disabled={!!scanning}>{scanning === "battlecard" ? "Generating..." : "Generate battlecard"}</button>
                 </div>
               : <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: "#222" }}>
                   {battlecard.overview && <div style={{ background: "#000", padding: "32px", gridColumn: "1 / -1" }}>
-                    <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#444", marginBottom: "12px" }}>// overview</div>
+                    <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#777", marginBottom: "12px" }}>// overview</div>
                     <p style={{ color: "#ccc", fontSize: "15px", lineHeight: 1.6, margin: 0 }}>{battlecard.overview}</p>
                   </div>}
                   {battlecard.how_to_win && <div style={{ background: "#000", padding: "32px" }}>
-                    <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#444", marginBottom: "16px" }}>// how to win</div>
+                    <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#777", marginBottom: "16px" }}>// how to win</div>
                     {battlecard.how_to_win.map((x: string, i: number) => <div key={i} style={{ color: "#ccc", fontSize: "14px", lineHeight: 1.6, marginBottom: "10px" }}>— {x}</div>)}
                   </div>}
                   {battlecard.weaknesses && <div style={{ background: "#000", padding: "32px" }}>
-                    <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#444", marginBottom: "16px" }}>// their weaknesses</div>
+                    <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#777", marginBottom: "16px" }}>// their weaknesses</div>
                     {battlecard.weaknesses.map((x: string, i: number) => <div key={i} style={{ color: "#ccc", fontSize: "14px", lineHeight: 1.6, marginBottom: "10px" }}>— {x}</div>)}
                   </div>}
                   {battlecard.strategic_moves && <div style={{ background: "#000", padding: "32px" }}>
-                    <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#444", marginBottom: "16px" }}>// strategic moves</div>
+                    <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#777", marginBottom: "16px" }}>// strategic moves</div>
                     {battlecard.strategic_moves.map((x: string, i: number) => <div key={i} style={{ color: "#ccc", fontSize: "14px", lineHeight: 1.6, marginBottom: "10px" }}>— {x}</div>)}
                   </div>}
                   {battlecard.watch_out_for && <div style={{ background: "#000", padding: "32px" }}>
-                    <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#444", marginBottom: "16px" }}>// watch out for</div>
+                    <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", color: "#777", marginBottom: "16px" }}>// watch out for</div>
                     {battlecard.watch_out_for.map((x: string, i: number) => <div key={i} style={{ color: "#ccc", fontSize: "14px", lineHeight: 1.6, marginBottom: "10px" }}>— {x}</div>)}
                   </div>}
                   <div style={{ background: "#000", padding: "16px 32px", gridColumn: "1 / -1", borderTop: "1px solid #1a1a1a" }}>
-                    <span style={{ ...m, fontSize: "10px", color: "#333" }}>Last updated: {battlecard.last_updated ? new Date(battlecard.last_updated).toLocaleDateString() : "—"}</span>
-                    <button onClick={() => runScan("battlecard")} disabled={!!scanning} style={{ ...m, marginLeft: "16px", fontSize: "10px", color: "#555", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase" }}>{scanning === "battlecard" ? "Regenerating..." : "Regenerate →"}</button>
+                    <span style={{ ...m, fontSize: "10px", color: "#666" }}>Last updated: {battlecard.last_updated ? new Date(battlecard.last_updated).toLocaleDateString() : "—"}</span>
+                    <button onClick={() => runScan("battlecard")} disabled={!!scanning} style={{ ...m, marginLeft: "16px", fontSize: "10px", color: "#888", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase" }}>{scanning === "battlecard" ? "Regenerating..." : "Regenerate →"}</button>
                   </div>
                 </div>
             }
