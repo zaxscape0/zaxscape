@@ -53,14 +53,14 @@ async function extractJobs(content: string, competitorName: string): Promise<any
     messages: [
       {
         role: 'system',
-        content: `Extract job postings from this careers page content. Return JSON array of jobs with fields: title, department, location. If no jobs found, return []. Only return the JSON array, nothing else.`
+        content: `You are parsing a careers page. Extract all job postings you can find. The content may be dense unformatted text. Look for patterns like "Job Title Location" or department names followed by role names. Return JSON with field "jobs" as array. Each job: {"title": string, "department": string, "location": string}. Extract as many as you can find, up to 30. If genuinely no jobs, return {"jobs":[]}.`
       },
       {
         role: 'user',
-        content: `Company: ${competitorName}\nCareers page content:\n${content}`
+        content: `Company: ${competitorName}\n\nCareers page text (extract all job titles you see):\n${content.slice(0, 6000)}`
       }
     ],
-    max_tokens: 1000,
+    max_tokens: 2000,
     response_format: { type: 'json_object' },
   })
   
