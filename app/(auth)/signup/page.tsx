@@ -90,7 +90,7 @@ function SignupForm() {
       </div>
 
       <button type="submit" disabled={loading} className="zax-btn zax-btn-primary" style={{ width: "100%", textAlign: "center" }}>
-        {loading ? "Creating account..." : "Create account →"}
+        {loading ? "Creating account..." : "Start free trial →"}
       </button>
     </form>
   )
@@ -107,7 +107,7 @@ export default function SignupPage() {
 
         <div style={{ marginBottom: "32px" }}>
           <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// get started</div>
-          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#fff", margin: 0, letterSpacing: "-0.02em" }}>Start monitoring.</h1>
+          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#fff", margin: 0, letterSpacing: "-0.02em" }}>Start your 14-day free trial.</h1>
         </div>
 
         <Suspense fallback={<div style={{ color: "#666", fontFamily: "monospace", fontSize: "12px" }}>Loading...</div>}>
@@ -116,7 +116,10 @@ export default function SignupPage() {
 
         <div style={{ marginTop: "24px", borderTop: "1px solid #1a1a1a", paddingTop: "24px" }}>
           <span style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#444" }}>
-            Have an account?{" "}
+            Card required. Cancel anytime. No charge for 14 days.</span>
+        </div>
+        <div style={{ marginTop: "24px", borderTop: "1px solid #1a1a1a", paddingTop: "24px" }}>
+          <span style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#444" }}>Have an account?{" "}
             <Link href="/login" style={{ color: "#888", textDecoration: "none" }}>Sign in</Link>
           </span>
         </div>
