@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 export default function DashboardPage() {
   const [competitors, setCompetitors] = useState<any[]>([])
   const [changes, setChanges] = useState<any[]>([])
+  const [jobs, setJobs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
@@ -33,8 +34,11 @@ export default function DashboardPage() {
     const { data: c } = await supabase.from("competitors").select("*").order("created_at", { ascending: false })
     const { data: s } = await supabase.from("snapshots").select("*, competitors(name,url)")
       .not("changes_detected", "is", null).order("scanned_at", { ascending: false }).limit(10)
+    const { data: j } = await supabase.from("job_postings").select("*, competitors(name)")
+      .order("first_seen_at", { ascending: false }).limit(20)
     setCompetitors(c || [])
     setChanges(s || [])
+    setJobs(j || [])
     setLoading(false)
   }
 
@@ -115,6 +119,29 @@ export default function DashboardPage() {
                     style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#555", textDecoration: "none" }}>
                     View site →
                   </a>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {/* Job Postings */}
+        <div style={{ marginTop: "60px" }}>
+          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "24px" }}>// competitor job postings</div>
+          {jobs.length === 0 ? (
+            <div style={{ border: "1px solid #222", padding: "40px", textAlign: "center" }}>
+              <p style={{ color: "#666", margin: 0, fontSize: "14px" }}>No job postings yet. Open a competitor and click "Gather intel".</p>
+            </div>
+          ) : (
+            <div style={{ border: "1px solid #222" }}>
+              {jobs.map((j: any, i: number) => (
+                <div key={j.id} style={{ padding: "16px 32px", borderBottom: i < jobs.length - 1 ? "1px solid #1a1a1a" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                    <span style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", textTransform: "uppercase", color: "#444", minWidth: "100px" }}>{j.competitors?.name}</span>
+                    <span style={{ fontSize: "14px", fontWeight: 500, color: j.is_new ? "#4ade80" : "#ccc" }}>{j.title}</span>
+                    {j.is_new && <span style={{ fontFamily: "'Courier New', monospace", fontSize: "9px", textTransform: "uppercase", background: "#4ade80", color: "#000", padding: "2px 6px", fontWeight: 700 }}>NEW</span>}
+                    {j.department && <span style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", color: "#444" }}>{j.department}</span>}
+                  </div>
+                  <span style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", color: "#333" }}>{new Date(j.first_seen_at).toLocaleDateString()}</span>
                 </div>
               ))}
             </div>

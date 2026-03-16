@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase'
 import { runMonitorForCompetitor } from '@/lib/monitor'
+import { scanJobsForCompetitor } from '@/lib/jobs'
 import { sendChangeAlert } from '@/lib/email'
 
 export async function GET(req: NextRequest) {
-  // Verify this is called by Vercel cron
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
   const results = []
   for (const competitor of competitors) {
     try {
+      // Scan website for changes
       const result = await runMonitorForCompetitor(competitor.id)
       if (result.hasChanged && result.changesDetected && competitor.profiles?.email) {
         await sendChangeAlert(
@@ -32,7 +33,16 @@ export async function GET(req: NextRequest) {
           competitor.url
         )
       }
-      results.push({ id: competitor.id, name: competitor.name, hasChanged: result.hasChanged })
+
+      // Scan job postings
+      const jobResult = await scanJobsForCompetitor(competitor.id)
+
+      results.push({
+        id: competitor.id,
+        name: competitor.name,
+        hasChanged: result.hasChanged,
+        newJobs: jobResult.newJobs?.length || 0,
+      })
     } catch (e) {
       results.push({ id: competitor.id, name: competitor.name, error: String(e) })
     }
