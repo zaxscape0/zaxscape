@@ -4,6 +4,34 @@ import OpenAI from 'openai'
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY as string })
 
 // Common careers page URL patterns to try
+
+// Try Ashby ATS API first - many modern SaaS companies use this
+async function fetchAshbyJobs(domain: string): Promise<any[]> {
+  const slug = domain.replace(/\.(com|io|app|co|dev|ai|so|net|org)$/, '').replace(/^www\./, '')
+  const payload = JSON.stringify({
+    operationName: 'ApiJobBoardWithTeams',
+    variables: { organizationHostedJobsPageName: slug },
+    query: 'query ApiJobBoardWithTeams($organizationHostedJobsPageName:String!){jobBoard:jobBoardWithTeams(organizationHostedJobsPageName:$organizationHostedJobsPageName){jobPostings{id title locationName employmentType team{name}}}}'
+  })
+  try {
+    const r = await fetch('https://jobs.ashbyhq.com/api/non-user-graphql?op=ApiJobBoardWithTeams', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'User-Agent': 'ZaxScapeBot/1.0' },
+      body: payload,
+      signal: AbortSignal.timeout(8000),
+    })
+    const data = await r.json()
+    const postings = data?.data?.jobBoard?.jobPostings || []
+    return postings.map((j: any) => ({
+      title: j.title,
+      department: j.team?.name || '',
+      location: j.locationName || '',
+    }))
+  } catch {
+    return []
+  }
+}
+
 function getCareersUrls(baseUrl: string): string[] {
   const domain = baseUrl.replace(/https?:\/\//, '').replace(/\/.*/, '')
   // Strip www and common subdomains to get root domain
@@ -98,17 +126,23 @@ export async function scanJobsForCompetitor(competitorId: string) {
   const { data: competitor } = await db.from('competitors').select('*').eq('id', competitorId).single()
   if (!competitor) throw new Error('Competitor not found')
 
-  const careersUrls = getCareersUrls(competitor.url)
-  let content = ''
+  const domain = competitor.url.replace(/https?:\/\//, '').replace(/\/.*/, '').replace(/^www\./, '')
   
-  for (const url of careersUrls) {
-    content = await scrapeJobs(url)
-    if (content.length > 200) break
+  // Try Ashby ATS first (structured data, no scraping needed)
+  let jobs = await fetchAshbyJobs(domain)
+  
+  // Fall back to scraping careers page if Ashby didn't work
+  if (jobs.length === 0) {
+    const careersUrls = getCareersUrls(competitor.url)
+    let content = ''
+    for (const url of careersUrls) {
+      content = await scrapeJobs(url)
+      if (content.length > 200) break
+    }
+    if (content) {
+      jobs = await extractJobs(content, competitor.name)
+    }
   }
-
-  if (!content) return { jobs: [], signal: null }
-
-  const jobs = await extractJobs(content, competitor.name)
   if (jobs.length === 0) return { jobs: [], signal: null }
 
   const signal = await analyzeJobSignal(jobs, competitor.name)
