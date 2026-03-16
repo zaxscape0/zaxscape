@@ -3,8 +3,6 @@ import OpenAI from 'openai'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY as string })
 
-// Common careers page URL patterns to try
-
 // Try Ashby ATS API first - many modern SaaS companies use this
 async function fetchAshbyJobs(domain: string): Promise<any[]> {
   const slug = domain.replace(/\.(com|io|app|co|dev|ai|so|net|org)$/, '').replace(/^www\./, '')
@@ -32,9 +30,46 @@ async function fetchAshbyJobs(domain: string): Promise<any[]> {
   }
 }
 
+// Also try Lever ATS
+async function fetchLeverJobs(domain: string): Promise<any[]> {
+  const slug = domain.replace(/\.(com|io|app|co|dev|ai|so|net|org)$/, '').replace(/^www\./, '')
+  try {
+    const r = await fetch(`https://api.lever.co/v0/postings/${slug}?mode=json&limit=50`, {
+      signal: AbortSignal.timeout(6000),
+    })
+    const data = await r.json()
+    if (!Array.isArray(data)) return []
+    return data.map((j: any) => ({
+      title: j.text || j.title,
+      department: j.categories?.team || j.categories?.department || '',
+      location: j.categories?.location || j.categories?.allLocations?.[0] || '',
+    }))
+  } catch {
+    return []
+  }
+}
+
+// Also try Greenhouse ATS
+async function fetchGreenhouseJobs(domain: string): Promise<any[]> {
+  const slug = domain.replace(/\.(com|io|app|co|dev|ai|so|net|org)$/, '').replace(/^www\./, '')
+  try {
+    const r = await fetch(`https://boards-api.greenhouse.io/v1/boards/${slug}/jobs`, {
+      signal: AbortSignal.timeout(6000),
+    })
+    const data = await r.json()
+    const jobs = data?.jobs || []
+    return jobs.map((j: any) => ({
+      title: j.title,
+      department: j.departments?.[0]?.name || '',
+      location: j.location?.name || '',
+    }))
+  } catch {
+    return []
+  }
+}
+
 function getCareersUrls(baseUrl: string): string[] {
   const domain = baseUrl.replace(/https?:\/\//, '').replace(/\/.*/, '')
-  // Strip www and common subdomains to get root domain
   const rootDomain = domain.replace(/^www\./, '')
   return [
     `https://${domain}/careers`,
@@ -46,7 +81,6 @@ function getCareersUrls(baseUrl: string): string[] {
     `https://${domain}/careers/jobs`,
     `https://${domain}/work-here`,
     `https://${domain}/join-us`,
-    `https://${domain}/work-with-us`,
     `https://jobs.${rootDomain}`,
     `https://careers.${rootDomain}`,
   ]
@@ -75,13 +109,12 @@ async function scrapeJobs(url: string): Promise<string> {
 
 async function extractJobs(content: string, competitorName: string): Promise<any[]> {
   if (!content || content.length < 100) return []
-  
   const r = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
       {
         role: 'system',
-        content: `You are parsing a careers page. Extract all job postings you can find. The content may be dense unformatted text. Look for patterns like "Job Title Location" or department names followed by role names. Return JSON with field "jobs" as array. Each job: {"title": string, "department": string, "location": string}. Extract as many as you can find, up to 30. If genuinely no jobs, return {"jobs":[]}.`
+        content: `You are parsing a careers page. Extract all job postings you can find. The content may be dense unformatted text. Look for patterns like "Job Title Location" or department names followed by role names. Return JSON with field "jobs" as array. Each job: {"title": string, "department": string, "location": string}. Extract as many as you can find, up to 50. If genuinely no jobs, return {"jobs":[]}.`
       },
       {
         role: 'user',
@@ -91,7 +124,6 @@ async function extractJobs(content: string, competitorName: string): Promise<any
     max_tokens: 2000,
     response_format: { type: 'json_object' },
   })
-  
   try {
     const parsed = JSON.parse(r.choices[0].message.content || '{"jobs":[]}')
     return parsed.jobs || []
@@ -102,7 +134,6 @@ async function extractJobs(content: string, competitorName: string): Promise<any
 
 async function analyzeJobSignal(jobs: any[], competitorName: string): Promise<string> {
   if (jobs.length === 0) return ''
-  
   const r = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
@@ -112,12 +143,11 @@ async function analyzeJobSignal(jobs: any[], competitorName: string): Promise<st
       },
       {
         role: 'user',
-        content: `${competitorName} is hiring for:\n${jobs.map(j => `- ${j.title} (${j.department || 'unknown dept'})`).join('\n')}\n\nWhat does this tell us about their strategy?`
+        content: `${competitorName} is hiring for:\n${jobs.slice(0, 30).map(j => `- ${j.title} (${j.department || 'unknown dept'})`).join('\n')}\n\nWhat does this tell us about their strategy?`
       }
     ],
     max_tokens: 200,
   })
-  
   return r.choices[0].message.content || ''
 }
 
@@ -127,11 +157,21 @@ export async function scanJobsForCompetitor(competitorId: string) {
   if (!competitor) throw new Error('Competitor not found')
 
   const domain = competitor.url.replace(/https?:\/\//, '').replace(/\/.*/, '').replace(/^www\./, '')
-  
-  // Try Ashby ATS first (structured data, no scraping needed)
-  let jobs = await fetchAshbyJobs(domain)
-  
-  // Fall back to scraping careers page if Ashby didn't work
+
+  // Try all ATS APIs in order
+  let jobs: any[] = []
+
+  jobs = await fetchAshbyJobs(domain)
+
+  if (jobs.length === 0) {
+    jobs = await fetchLeverJobs(domain)
+  }
+
+  if (jobs.length === 0) {
+    jobs = await fetchGreenhouseJobs(domain)
+  }
+
+  // Fall back to scraping
   if (jobs.length === 0) {
     const careersUrls = getCareersUrls(competitor.url)
     let content = ''
@@ -143,31 +183,46 @@ export async function scanJobsForCompetitor(competitorId: string) {
       jobs = await extractJobs(content, competitor.name)
     }
   }
-  if (jobs.length === 0) return { jobs: [], signal: null }
+
+  if (jobs.length === 0) return { jobs: [], newJobs: [], signal: null }
 
   const signal = await analyzeJobSignal(jobs, competitor.name)
 
-  // Get existing jobs to find new ones
+  // Get existing jobs to find what's new
   const { data: existing } = await db
     .from('job_postings')
     .select('title')
     .eq('competitor_id', competitorId)
-
   const existingTitles = new Set((existing || []).map((j: any) => j.title.toLowerCase()))
-  const newJobs = jobs.filter((j: any) => !existingTitles.has(j.title.toLowerCase()))
 
-  // Upsert all jobs
-  for (const job of jobs) {
-    const isNew = !existingTitles.has(job.title.toLowerCase())
-    await db.from('job_postings').upsert({
-      competitor_id: competitorId,
-      title: job.title,
-      department: job.department,
-      location: job.location,
-      signal: isNew ? signal : null,
-      is_new: isNew,
-      last_seen_at: new Date().toISOString(),
-    }, { onConflict: 'competitor_id,title' })
+  const newJobs = jobs.filter((j: any) => !existingTitles.has(j.title.toLowerCase()))
+  const now = new Date().toISOString()
+
+  // Mark all existing as last_seen so we can detect removed jobs
+  await db.from('job_postings')
+    .update({ last_seen_at: now })
+    .eq('competitor_id', competitorId)
+    .in('title', jobs.map((j: any) => j.title))
+
+  // Insert new jobs
+  if (newJobs.length > 0) {
+    await db.from('job_postings').insert(
+      newJobs.map((job: any) => ({
+        competitor_id: competitorId,
+        title: job.title,
+        department: job.department || null,
+        location: job.location || null,
+        signal: signal || null,
+        is_new: true,
+        first_seen_at: now,
+        last_seen_at: now,
+      }))
+    )
+  }
+
+  // On very first scan (no existing), insert all jobs
+  if (existingTitles.size === 0 && jobs.length > 0) {
+    // Already inserted above as newJobs == jobs
   }
 
   return { jobs, newJobs, signal }
