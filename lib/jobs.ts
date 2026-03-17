@@ -7,7 +7,7 @@ const openai = new OpenAI({
 })
 
 // Known ATS slugs for companies whose slug differs from domain
-const KNOWN_SLUGS: Record<string, { ats: string; slug: string }> = {
+const KNOWN_SLUGS: Record<string, { ats: string; slug: string; board?: string }> = {
   'stryker.com': { ats: 'workday', slug: 'stryker', board: 'StrykerCareers' },
   'stryker': { ats: 'workday', slug: 'stryker', board: 'StrykerCareers' },
   'anduril.com': { ats: 'greenhouse', slug: 'andurilindustries' },
