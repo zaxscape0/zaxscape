@@ -1,7 +1,10 @@
 import { createServerSupabase } from './supabase'
 import OpenAI from 'openai'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY as string })
+const openai = new OpenAI({
+  apiKey: process.env.GROQ_API_KEY as string,
+  baseURL: 'https://api.groq.com/openai/v1',
+})
 
 // Known ATS slugs for companies whose slug differs from domain
 const KNOWN_SLUGS: Record<string, { ats: string; slug: string }> = {
@@ -145,7 +148,7 @@ async function scrapeJobs(url: string): Promise<string> {
 async function extractJobs(content: string, competitorName: string): Promise<any[]> {
   if (!content || content.length < 100) return []
   const r = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'llama-3.3-70b-versatile',
     messages: [
       { role: 'system', content: 'Extract all job postings from this careers page text. Return JSON {jobs: [{title, department, location}]}. Extract up to 50 jobs. If no jobs return {jobs:[]}.' },
       { role: 'user', content: `Company: ${competitorName}\n\n${content.slice(0, 6000)}` }
@@ -161,7 +164,7 @@ async function extractJobs(content: string, competitorName: string): Promise<any
 async function analyzeJobSignal(jobs: any[], competitorName: string): Promise<string> {
   if (jobs.length === 0) return ''
   const r = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'llama-3.3-70b-versatile',
     messages: [
       { role: 'system', content: "Competitive intelligence analyst. In 2-3 sentences, what do these job postings reveal about this company's strategic priorities?" },
       { role: 'user', content: `${competitorName} is hiring:\n${jobs.slice(0, 30).map((j: any) => `- ${j.title}`).join('\n')}` }

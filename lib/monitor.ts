@@ -1,7 +1,10 @@
 import { createServerSupabase } from './supabase'
 import OpenAI from 'openai'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY as string })
+const openai = new OpenAI({
+  apiKey: process.env.GROQ_API_KEY as string,
+  baseURL: 'https://api.groq.com/openai/v1',
+})
 
 export async function scrapeUrl(url: string): Promise<string> {
   const r = await fetch(url, {
@@ -26,7 +29,7 @@ export function hashContent(c: string): string {
 
 export async function analyzeChanges(prev: string, curr: string, name: string): Promise<string> {
   const r = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'llama-3.3-70b-versatile',
     messages: [
       { role: 'system', content: 'You are a competitive intelligence analyst. Summarize competitor page changes concisely and actionably.' },
       { role: 'user', content: `Competitor: ${name}\nPREVIOUS:\n${prev.slice(0, 3000)}\nCURRENT:\n${curr.slice(0, 3000)}\nWhat changed and why does it matter?` },
@@ -38,7 +41,7 @@ export async function analyzeChanges(prev: string, curr: string, name: string): 
 
 export async function analyzeBaseline(content: string, name: string): Promise<string> {
   const r = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'llama-3.3-70b-versatile',
     messages: [
       { role: 'system', content: 'You are a competitive intelligence analyst. Given a competitor\'s website content, write a concise intelligence briefing: what they offer, their positioning, key messaging, and anything a competitor should know. Be specific and actionable.' },
       { role: 'user', content: `Competitor: ${name}\nWebsite content:\n${content.slice(0, 5000)}\n\nWrite an intelligence briefing on this competitor.` },
