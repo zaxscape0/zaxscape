@@ -4,5 +4,19 @@
       "path": "/api/cron/scan",
       "schedule": "0 8 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "app/api/jobs/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/monitor/run/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/battlecard/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/reviews/route.ts": {
+      "maxDuration": 60
+    }
+  }
 }
