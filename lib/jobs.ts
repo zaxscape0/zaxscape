@@ -8,8 +8,8 @@ const openai = new OpenAI({
 
 // Known ATS slugs for companies whose slug differs from domain
 const KNOWN_SLUGS: Record<string, { ats: string; slug: string }> = {
-  'stryker.com': { ats: 'workday', slug: 'stryker' },
-  'stryker': { ats: 'workday', slug: 'stryker' },
+  'stryker.com': { ats: 'workday', slug: 'stryker', board: 'StrykerCareers' },
+  'stryker': { ats: 'workday', slug: 'stryker', board: 'StrykerCareers' },
   'anduril.com': { ats: 'greenhouse', slug: 'andurilindustries' },
   'anduril': { ats: 'greenhouse', slug: 'andurilindustries' },
   'notion.so': { ats: 'ashby', slug: 'notion' },
@@ -70,12 +70,14 @@ async function fetchGreenhouseJobs(slug: string): Promise<any[]> {
   } catch { return [] }
 }
 
-async function fetchWorkdayJobs(slug: string): Promise<any[]> {
+async function fetchWorkdayJobs(slug: string, board?: string): Promise<any[]> {
   // Try common Workday URL patterns
   const wdNumbers = ['1', '5', '3', '9']
   for (const n of wdNumbers) {
     const wdDomain = `${slug}.wd${n}.myworkdayjobs.com`
-    const boardSlug = `${slug}Careers`
+    // Try provided board slug first, then capitalized, then lowercase variants
+    const boardSlugs = board ? [board] : [`${slug.charAt(0).toUpperCase()}${slug.slice(1)}Careers`, `${slug}Careers`, `${slug.toUpperCase()}Careers`]
+    for (const boardSlug of boardSlugs) {
     try {
       const r = await fetch(`https://${wdDomain}/wday/cxs/${slug}/${boardSlug}/jobs`, {
         method: 'POST',
@@ -92,6 +94,7 @@ async function fetchWorkdayJobs(slug: string): Promise<any[]> {
         location: j.locationsText || '',
       }))
     } catch { continue }
+    }
   }
   return []
 }
@@ -190,7 +193,7 @@ export async function scanJobsForCompetitor(competitorId: string) {
     if (known.ats === 'ashby') jobs = await fetchAshbyJobs(known.slug)
     else if (known.ats === 'lever') jobs = await fetchLeverJobs(known.slug)
     else if (known.ats === 'greenhouse') jobs = await fetchGreenhouseJobs(known.slug)
-    else if (known.ats === 'workday') jobs = await fetchWorkdayJobs(known.slug)
+    else if (known.ats === 'workday') jobs = await fetchWorkdayJobs(known.slug, (known as any).board)
     else if (known.ats === 'phenom') jobs = await fetchPhenomJobs(known.slug)
   }
 
