@@ -14,14 +14,16 @@ export default function DashboardPage() {
   const [minValue, setMinValue] = useState("")
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(0)
+  const [unlimited, setUnlimited] = useState(false)
   const router = useRouter()
   const PAGE = 25
+  const FREE_LIMIT = 20
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { router.push("/login"); return }
       supabase.from("profiles").select("*").eq("id", session.user.id).single()
-        .then(({ data }) => { setProfile(data); load(data?.property_type || "commercial", 0, "", "0", "", "") })
+        .then(({ data }) => { setProfile(data); setUnlimited(!!data?.unlimited); load(data?.property_type || "commercial", 0, "", "0", "", "") })
     })
   }, [])
 
@@ -31,7 +33,7 @@ export default function DashboardPage() {
       .select("id,address,zip,owner,assessed_value,yr_built,motivation_score,signals", { count: "exact" })
       .order("motivation_score", { ascending: false })
       .order("assessed_value", { ascending: false })
-      .range(pg * PAGE, (pg + 1) * PAGE - 1)
+      .range(pg * PAGE, unlimited ? (pg + 1) * PAGE - 1 : FREE_LIMIT - 1)
     if (ptype && ptype !== "both") q = q.eq("property_type", ptype)
     if (z) q = q.eq("zip", z)
     if (parseInt(ms) > 0) q = q.gte("motivation_score", parseInt(ms))
@@ -91,6 +93,15 @@ export default function DashboardPage() {
           </select></div>
           <button onClick={applyFilter} className="zax-btn zax-btn-primary" style={{ whiteSpace:"nowrap",padding:"12px 20px",fontSize: "13px" }}>Filter</button>
         </div>
+        {!unlimited && total > 0 && (
+          <div style={{ background:"#0a0a0a",border:"1px solid #333",padding:"16px 20px",marginBottom:"16px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"12px" }}>
+            <div>
+              <div style={{ ...m,fontSize:"12px",textTransform:"uppercase",letterSpacing:"0.1em",color:"#888",marginBottom:"4px" }}>// free preview — 20 of {total.toLocaleString()} properties</div>
+              <div style={{ fontSize:"15px",color:"#ccc" }}>Upgrade to unlock all <strong style={{ color:"#fff" }}>{total.toLocaleString()}</strong> properties.</div>
+            </div>
+            <a href="/upgrade" className="zax-btn zax-btn-primary" style={{ fontSize:"12px",padding:"10px 20px",whiteSpace:"nowrap" }}>Upgrade →</a>
+          </div>
+        )}
         <div style={{ border:"1px solid #1a1a1a" }}>
           <div className="prop-table-header" style={{ display:"grid",gridTemplateColumns:"2fr 1.5fr 1fr 1fr 1fr 72px",borderBottom:"1px solid #1a1a1a",padding:"10px 24px",background:"#040404" }}>
             {["Address","Owner","Value","Year","ZIP","Score"].map(h => (

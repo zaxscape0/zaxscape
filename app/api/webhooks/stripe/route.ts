@@ -18,21 +18,26 @@ export async function POST(req: NextRequest) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
     const email = session.customer_email
+    const plan = session.metadata?.plan || 'access'
     const propertyType = session.metadata?.propertyType || 'commercial'
+    const unlimited = ['monthly', 'yearly', 'lifetime'].includes(plan)
 
     if (email) {
-      await db.from('profiles')
-        .update({ plan_active: true, property_type: propertyType })
-        .eq('email', email)
+      await db.from('profiles').update({
+        plan_active: true,
+        plan: plan,
+        unlimited: unlimited,
+        property_type: propertyType,
+      }).eq('email', email)
     }
   }
 
   if (event.type === 'customer.subscription.deleted') {
     const sub = event.data.object
-    const customer = await stripe.customers.retrieve(sub.customer)
+    const customer = await stripe.customers.retrieve(sub.customer as string)
     const email = (customer as any).email
     if (email) {
-      await db.from('profiles').update({ plan_active: false }).eq('email', email)
+      await db.from('profiles').update({ plan_active: false, unlimited: false }).eq('email', email)
     }
   }
 

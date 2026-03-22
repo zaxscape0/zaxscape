@@ -11,11 +11,12 @@ export function getStripe(): Stripe {
 }
 
 export const stripe = new Proxy({} as Stripe, {
-  get(_target, prop) {
-    return (getStripe() as any)[prop]
-  }
+  get(_target, prop) { return (getStripe() as any)[prop] }
 })
 
-export const PLANS: Record<string, { name: string; price: number; priceId: string }> = {
-  access: { name: 'ZaxScape Access', price: 499, priceId: process.env.STRIPE_PRICE_ACCESS as string },
+export const PLANS: Record<string, { name: string; price: number; priceId: string; mode: 'subscription' | 'payment' }> = {
+  access:   { name: 'ZaxScape Access',          price: 499,    priceId: process.env.STRIPE_PRICE_ACCESS   as string, mode: 'subscription' },
+  monthly:  { name: 'ZaxScape Unlimited',        price: 19900,  priceId: process.env.STRIPE_PRICE_MONTHLY  as string, mode: 'subscription' },
+  yearly:   { name: 'ZaxScape Unlimited Annual', price: 214999, priceId: process.env.STRIPE_PRICE_YEARLY   as string, mode: 'subscription' },
+  lifetime: { name: 'ZaxScape Lifetime',         price: 500000, priceId: process.env.STRIPE_PRICE_LIFETIME as string, mode: 'payment' },
 }
