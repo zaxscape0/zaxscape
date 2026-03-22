@@ -107,7 +107,7 @@ export default function DashboardPage() {
                 {p.signals && <div style={{ ...m,fontSize: "12px",color:"#555" }}>{p.signals.split(",")[0]}</div>}
               </div>
               <div style={{ fontSize: "15px",color:"#999",alignSelf:"center" }}>{p.owner || "—"}</div>
-              <div style={{ ...m,fontSize: "15px",color:"#bbb",alignSelf:"center" }}>{p.assessed_value ? "$"+(Math.round(p.assessed_value/1000))+"k" : "—"}</div>
+              <div style={{ ...m,fontSize: "15px",color:"#bbb",alignSelf:"center" }}>{p.assessed_value ? (p.assessed_value >= 1000000 ? "$"+(p.assessed_value/1000000).toFixed(1)+"M" : "$"+Math.round(p.assessed_value/1000)+"k") : "—"}</div>
               <div style={{ ...m,fontSize: "15px",color:"#777",alignSelf:"center" }}>{p.yr_built || "—"}</div>
               <div style={{ ...m,fontSize: "15px",color:"#777",alignSelf:"center" }}>{p.zip}</div>
               <div style={{ alignSelf:"center" }}>
