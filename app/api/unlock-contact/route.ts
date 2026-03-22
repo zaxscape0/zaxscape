@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,29 +7,37 @@ export async function POST(req: NextRequest) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.zaxscape.com'
 
-    const session = await stripe.checkout.sessions.create({
-      customer_email: email,
-      payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'Owner Contact Unlock',
-            description: 'Phone and email for one property owner via skip tracing',
-          },
-          unit_amount: 99,
-        },
-        quantity: 1,
-      }],
-      mode: 'payment',
-      success_url: appUrl + '/properties/' + propertyId + '?unlocked=true',
-      cancel_url: appUrl + '/properties/' + propertyId,
-      metadata: { propertyId, type: 'contact_unlock' },
+    const body = new URLSearchParams({
+      'customer_email': email,
+      'payment_method_types[0]': 'card',
+      'line_items[0][price_data][currency]': 'usd',
+      'line_items[0][price_data][product_data][name]': 'Owner Contact Unlock',
+      'line_items[0][price_data][product_data][description]': 'Phone and email for one property owner',
+      'line_items[0][price_data][unit_amount]': '99',
+      'line_items[0][quantity]': '1',
+      'mode': 'payment',
+      'success_url': appUrl + '/properties/' + propertyId + '?unlocked=true',
+      'cancel_url': appUrl + '/properties/' + propertyId,
+      'metadata[propertyId]': propertyId,
+      'metadata[type]': 'contact_unlock',
     })
+
+    const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body.toString(),
+    })
+    const session = await res.json()
+
+    if (session.error) {
+      return NextResponse.json({ error: session.error.message }, { status: 400 })
+    }
 
     return NextResponse.json({ url: session.url })
   } catch (e: any) {
-    console.error('unlock-contact error:', e?.message || e)
     return NextResponse.json({ error: String(e?.message || e) }, { status: 500 })
   }
 }
