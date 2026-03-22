@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createServerSupabase } from '@/lib/supabase'
-import { sendWelcomeEmail } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   const body = await req.text()
-  const sig = req.headers.get('stripe-signature') || ''
-
+  const sig = req.headers.get('stripe-signature') as string
   let event: any
+
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET || '')
+    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET as string)
   } catch {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
@@ -17,31 +16,24 @@ export async function POST(req: NextRequest) {
   const db = createServerSupabase()
 
   if (event.type === 'checkout.session.completed') {
-    const s = event.data.object
-    const plan = s.metadata?.plan || 'starter'
-    const limits: Record<string, number> = { starter: 3, pro: 10, team: 999 }
-    if (s.customer_email) {
-      await db.from('profiles').upsert({
-        email: s.customer_email,
-        plan,
-        stripe_customer_id: s.customer,
-        stripe_subscription_id: s.subscription,
-        competitor_limit: limits[plan] || 3,
-      }, { onConflict: 'email' })
+    const session = event.data.object
+    const email = session.customer_email
+    const propertyType = session.metadata?.propertyType || 'commercial'
 
-      // Send welcome email
-      try {
-        await sendWelcomeEmail(s.customer_email)
-      } catch (e) {
-        console.error('Welcome email failed:', e)
-      }
+    if (email) {
+      await db.from('profiles')
+        .update({ plan_active: true, property_type: propertyType })
+        .eq('email', email)
     }
   }
 
   if (event.type === 'customer.subscription.deleted') {
-    const s = event.data.object
-    await db.from('profiles').update({ plan: 'free', competitor_limit: 0 })
-      .eq('stripe_subscription_id', s.id)
+    const sub = event.data.object
+    const customer = await stripe.customers.retrieve(sub.customer)
+    const email = (customer as any).email
+    if (email) {
+      await db.from('profiles').update({ plan_active: false }).eq('email', email)
+    }
   }
 
   return NextResponse.json({ received: true })
