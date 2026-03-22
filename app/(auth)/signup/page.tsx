@@ -62,7 +62,7 @@ function SignupForm() {
     <div>
       {error && (
         <div style={{ background: "#0a0a0a", border: "1px solid #f44", padding: "12px 16px", marginBottom: "24px" }}>
-          <span style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", color: "#f66" }}>{error}</span>
+          <span style={{ fontFamily: "'Courier New', monospace", fontSize: "14px", color: "#f66" }}>{error}</span>
         </div>
       )}
 
@@ -82,7 +82,7 @@ function SignupForm() {
         </form>
       ) : (
         <div>
-          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "20px" }}>// what are you looking for?</div>
+          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "20px" }}>// what are you looking for?</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "1px", background: "#222", marginBottom: "32px" }}>
             {opts.map(opt => (
               <button key={opt.id} type="button" onClick={() => setPropertyType(opt.id)}
@@ -93,11 +93,11 @@ function SignupForm() {
                   display: "flex", justifyContent: "space-between", alignItems: "center",
                 }}>
                 <div>
-                  <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.15em", color: propertyType === opt.id ? "#555" : "#555", marginBottom: "4px" }}>{opt.num}</div>
-                  <div style={{ fontSize: "17px", fontWeight: 700, marginBottom: "2px" }}>{opt.label}</div>
-                  <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", color: propertyType === opt.id ? "#555" : "#666" }}>{opt.desc}</div>
+                  <div style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.15em", color: propertyType === opt.id ? "#555" : "#555", marginBottom: "4px" }}>{opt.num}</div>
+                  <div style={{ fontSize: "19px", fontWeight: 700, marginBottom: "2px" }}>{opt.label}</div>
+                  <div style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", color: propertyType === opt.id ? "#555" : "#666" }}>{opt.desc}</div>
                 </div>
-                <div style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", fontWeight: 700, color: propertyType === opt.id ? "#000" : opt.id === "both" ? "#fff" : "#888", whiteSpace: "nowrap", marginLeft: "16px" }}>
+                <div style={{ fontFamily: "'Courier New', monospace", fontSize: "14px", fontWeight: 700, color: propertyType === opt.id ? "#000" : opt.id === "both" ? "#fff" : "#888", whiteSpace: "nowrap", marginLeft: "16px" }}>
                   {opt.price}
                 </div>
               </button>
@@ -107,7 +107,7 @@ function SignupForm() {
             className="zax-btn zax-btn-primary" style={{ width: "100%", textAlign: "center", opacity: !propertyType ? 0.4 : 1 }}>
             {loading ? "Creating account..." : propertyType === "both" ? "Continue to checkout →" : "Create free account →"}
           </button>
-          <button onClick={() => setStep("account")} style={{ fontFamily: "'Courier New', monospace", marginTop: "16px", width: "100%", fontSize: "11px", color: "#444", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase" }}>
+          <button onClick={() => setStep("account")} style={{ fontFamily: "'Courier New', monospace", marginTop: "16px", width: "100%", fontSize: "13px", color: "#444", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase" }}>
             ← Back
           </button>
         </div>
@@ -121,18 +121,18 @@ export default function SignupPage() {
     <div style={{ minHeight: "100vh", background: "#000", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
       <div style={{ width: "100%", maxWidth: "440px" }}>
         <div style={{ borderBottom: "1px solid #222", paddingBottom: "24px", marginBottom: "40px" }}>
-          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// zaxscape</div>
+          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// zaxscape</div>
           <Link href="/"><img src="/logo.jpg" alt="ZaxScape" style={{ height: "60px", display: "block" }} /></Link>
         </div>
         <div style={{ marginBottom: "32px" }}>
-          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// get started</div>
-          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#fff", margin: 0, letterSpacing: "-0.02em" }}>Find motivated sellers in Boston.</h1>
+          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// get started</div>
+          <h1 style={{ fontSize: "30px", fontWeight: 700, color: "#fff", margin: 0, letterSpacing: "-0.02em" }}>Find motivated sellers in Boston.</h1>
         </div>
         <Suspense fallback={null}>
           <SignupForm />
         </Suspense>
         <div style={{ marginTop: "24px", borderTop: "1px solid #1a1a1a", paddingTop: "24px" }}>
-          <span style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#444" }}>
+          <span style={{ fontFamily: "'Courier New', monospace", fontSize: "13px", color: "#444" }}>
             Have an account?{" "}
             <Link href="/login" style={{ color: "#888", textDecoration: "none" }}>Sign in</Link>
           </span>

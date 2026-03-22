@@ -20,7 +20,7 @@ body {
 /* Zax button styles */
 .zax-btn {
   font-family: 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 12px 24px;
@@ -52,7 +52,7 @@ body {
   color: #fff;
   padding: 12px 16px;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   outline: none;
   transition: border-color 0.15s;
 }
@@ -62,7 +62,7 @@ body {
 /* Label */
 .zax-label {
   font-family: 'Courier New', monospace;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #666;

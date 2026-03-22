@@ -58,7 +58,7 @@ export default function DashboardPage() {
 
   if (loading) return (
     <div style={{ minHeight:"100vh",background:"#000",display:"flex",alignItems:"center",justifyContent:"center" }}>
-      <span style={{ ...m,fontSize:"12px",color:"#555" }}>loading...</span>
+      <span style={{ ...m,fontSize: "14px",color:"#555" }}>loading...</span>
     </div>
   )
 
@@ -68,33 +68,33 @@ export default function DashboardPage() {
         <div style={{ maxWidth:"1200px",margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:"60px" }}>
           <Link href="/dashboard"><img src="/logo.jpg" alt="ZaxScape" style={{ height:"52px" }} /></Link>
           <div style={{ display:"flex",alignItems:"center",gap:"24px" }}>
-            <span style={{ ...m,fontSize:"11px",color:"#666",textTransform:"uppercase" }}>{(profile?.property_type || "commercial")} · Boston MA</span>
+            <span style={{ ...m,fontSize: "13px",color:"#666",textTransform:"uppercase" }}>{(profile?.property_type || "commercial")} · Boston MA</span>
             <button onClick={async () => { await supabase.auth.signOut(); router.push("/login") }}
-              style={{ ...m,fontSize:"11px",textTransform:"uppercase",color:"#555",background:"none",border:"none",cursor:"pointer" }}>Sign out</button>
+              style={{ ...m,fontSize: "13px",textTransform:"uppercase",color:"#555",background:"none",border:"none",cursor:"pointer" }}>Sign out</button>
           </div>
         </div>
       </nav>
       <main style={{ maxWidth:"1200px",margin:"0 auto",padding:"48px 40px" }}>
         <div style={{ marginBottom:"40px" }}>
-          <div style={{ ...m,fontSize:"10px",letterSpacing:"0.2em",textTransform:"uppercase",color:"#555",marginBottom:"8px" }}>// motivated sellers · Boston MA</div>
-          <h1 style={{ fontSize:"32px",fontWeight:700,margin:"0 0 4px",letterSpacing:"-0.02em" }}>Property Intelligence</h1>
-          <div style={{ ...m,fontSize:"11px",color:"#666" }}>{total.toLocaleString()} properties · sorted by motivation score</div>
+          <div style={{ ...m,fontSize: "12px",letterSpacing:"0.2em",textTransform:"uppercase",color:"#555",marginBottom:"8px" }}>// motivated sellers · Boston MA</div>
+          <h1 style={{ fontSize: "34px",fontWeight:700,margin:"0 0 4px",letterSpacing:"-0.02em" }}>Property Intelligence</h1>
+          <div style={{ ...m,fontSize: "13px",color:"#666" }}>{total.toLocaleString()} properties · sorted by motivation score</div>
         </div>
         <div style={{ border:"1px solid #1a1a1a",padding:"20px 24px",marginBottom:"32px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr auto",gap:"16px",alignItems:"end" }}>
           {([["Search owner", search, setSearch, "Owner name..."],["ZIP code", zip, setZip, "02101"],["Min value ($)", minValue, setMinValue, "200000"]] as any[]).map(([lbl,val,set,ph]: any) => (
-            <div key={lbl}><label style={{ ...m,fontSize:"10px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#555",display:"block",marginBottom:"8px" }}>{lbl}</label>
+            <div key={lbl}><label style={{ ...m,fontSize: "12px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#555",display:"block",marginBottom:"8px" }}>{lbl}</label>
             <input value={val} onChange={e => set(e.target.value)} onKeyDown={e => e.key === "Enter" && applyFilter()} placeholder={ph} className="zax-input" style={{ marginBottom:0 }} /></div>
           ))}
-          <div><label style={{ ...m,fontSize:"10px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#555",display:"block",marginBottom:"8px" }}>Min score</label>
+          <div><label style={{ ...m,fontSize: "12px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#555",display:"block",marginBottom:"8px" }}>Min score</label>
           <select value={minScore} onChange={e => setMinScore(e.target.value)} className="zax-input" style={{ marginBottom:0 }}>
             <option value="0">Any</option><option value="3">3+ good</option><option value="5">5+ strong</option><option value="7">7+ hot</option>
           </select></div>
-          <button onClick={applyFilter} className="zax-btn zax-btn-primary" style={{ whiteSpace:"nowrap",padding:"12px 20px",fontSize:"11px" }}>Filter</button>
+          <button onClick={applyFilter} className="zax-btn zax-btn-primary" style={{ whiteSpace:"nowrap",padding:"12px 20px",fontSize: "13px" }}>Filter</button>
         </div>
         <div style={{ border:"1px solid #1a1a1a" }}>
           <div style={{ display:"grid",gridTemplateColumns:"2fr 1.5fr 1fr 1fr 1fr 72px",borderBottom:"1px solid #1a1a1a",padding:"10px 24px",background:"#040404" }}>
             {["Address","Owner","Value","Year","ZIP","Score"].map(h => (
-              <div key={h} style={{ ...m,fontSize:"10px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#444" }}>{h}</div>
+              <div key={h} style={{ ...m,fontSize: "12px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#444" }}>{h}</div>
             ))}
           </div>
           {properties.length === 0 ? (
@@ -103,25 +103,25 @@ export default function DashboardPage() {
             <Link key={p.id} href={"/properties/" + p.id}
               style={{ display:"grid",gridTemplateColumns:"2fr 1.5fr 1fr 1fr 1fr 72px",padding:"14px 24px",borderBottom:i<properties.length-1?"1px solid #0d0d0d":"none",textDecoration:"none",color:"inherit" }}>
               <div>
-                <div style={{ fontSize:"14px",fontWeight:500,color:"#ddd",marginBottom:"2px" }}>{p.address}</div>
-                {p.signals && <div style={{ ...m,fontSize:"10px",color:"#555" }}>{p.signals.split(",")[0]}</div>}
+                <div style={{ fontSize: "16px",fontWeight:500,color:"#ddd",marginBottom:"2px" }}>{p.address}</div>
+                {p.signals && <div style={{ ...m,fontSize: "12px",color:"#555" }}>{p.signals.split(",")[0]}</div>}
               </div>
-              <div style={{ fontSize:"13px",color:"#999",alignSelf:"center" }}>{p.owner || "—"}</div>
-              <div style={{ ...m,fontSize:"13px",color:"#bbb",alignSelf:"center" }}>{p.assessed_value ? "$"+(Math.round(p.assessed_value/1000))+"k" : "—"}</div>
-              <div style={{ ...m,fontSize:"13px",color:"#777",alignSelf:"center" }}>{p.yr_built || "—"}</div>
-              <div style={{ ...m,fontSize:"13px",color:"#777",alignSelf:"center" }}>{p.zip}</div>
+              <div style={{ fontSize: "15px",color:"#999",alignSelf:"center" }}>{p.owner || "—"}</div>
+              <div style={{ ...m,fontSize: "15px",color:"#bbb",alignSelf:"center" }}>{p.assessed_value ? "$"+(Math.round(p.assessed_value/1000))+"k" : "—"}</div>
+              <div style={{ ...m,fontSize: "15px",color:"#777",alignSelf:"center" }}>{p.yr_built || "—"}</div>
+              <div style={{ ...m,fontSize: "15px",color:"#777",alignSelf:"center" }}>{p.zip}</div>
               <div style={{ alignSelf:"center" }}>
-                <span style={{ ...m,fontSize:"13px",fontWeight:700,color:scoreColor(p.motivation_score) }}>{p.motivation_score}</span>
-                <span style={{ ...m,fontSize:"10px",color:"#333" }}>/8</span>
+                <span style={{ ...m,fontSize: "15px",fontWeight:700,color:scoreColor(p.motivation_score) }}>{p.motivation_score}</span>
+                <span style={{ ...m,fontSize: "12px",color:"#333" }}>/8</span>
               </div>
             </Link>
           ))}
         </div>
         <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:"24px" }}>
-          <div style={{ ...m,fontSize:"11px",color:"#555" }}>Showing {page*PAGE+1}–{Math.min((page+1)*PAGE,total)} of {total.toLocaleString()}</div>
+          <div style={{ ...m,fontSize: "13px",color:"#555" }}>Showing {page*PAGE+1}–{Math.min((page+1)*PAGE,total)} of {total.toLocaleString()}</div>
           <div style={{ display:"flex",gap:"8px" }}>
-            <button onClick={() => goPage(page-1)} disabled={page===0} className="zax-btn zax-btn-secondary" style={{ fontSize:"11px",padding:"8px 16px",opacity:page===0?0.3:1 }}>← Prev</button>
-            <button onClick={() => goPage(page+1)} disabled={(page+1)*PAGE>=total} className="zax-btn zax-btn-secondary" style={{ fontSize:"11px",padding:"8px 16px",opacity:(page+1)*PAGE>=total?0.3:1 }}>Next →</button>
+            <button onClick={() => goPage(page-1)} disabled={page===0} className="zax-btn zax-btn-secondary" style={{ fontSize: "13px",padding:"8px 16px",opacity:page===0?0.3:1 }}>← Prev</button>
+            <button onClick={() => goPage(page+1)} disabled={(page+1)*PAGE>=total} className="zax-btn zax-btn-secondary" style={{ fontSize: "13px",padding:"8px 16px",opacity:(page+1)*PAGE>=total?0.3:1 }}>Next →</button>
           </div>
         </div>
       </main>

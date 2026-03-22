@@ -25,19 +25,19 @@ export default function LoginPage() {
       <div style={{ width: "100%", maxWidth: "400px" }}>
         {/* Header */}
         <div style={{ borderBottom: "1px solid #222", paddingBottom: "24px", marginBottom: "40px" }}>
-          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// zaxscape</div>
+          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// zaxscape</div>
           <Link href="/"><img src="/logo.jpg" alt="ZaxScape" style={{ height: "73px", display: "block" }} /></Link>
         </div>
 
         <div style={{ marginBottom: "32px" }}>
-          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// sign in</div>
-          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#fff", margin: 0, letterSpacing: "-0.02em" }}>Welcome back.</h1>
+          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "8px" }}>// sign in</div>
+          <h1 style={{ fontSize: "30px", fontWeight: 700, color: "#fff", margin: 0, letterSpacing: "-0.02em" }}>Welcome back.</h1>
         </div>
 
         <form onSubmit={handleLogin}>
           {error && (
             <div style={{ background: "#0a0a0a", border: "1px solid #ff4444", padding: "12px 16px", marginBottom: "24px" }}>
-              <span style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", color: "#ff6666" }}>{error}</span>
+              <span style={{ fontFamily: "'Courier New', monospace", fontSize: "14px", color: "#ff6666" }}>{error}</span>
             </div>
           )}
           <div style={{ marginBottom: "20px" }}>
@@ -54,7 +54,7 @@ export default function LoginPage() {
         </form>
 
         <div style={{ marginTop: "24px", borderTop: "1px solid #1a1a1a", paddingTop: "24px" }}>
-          <span style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#444" }}>
+          <span style={{ fontFamily: "'Courier New', monospace", fontSize: "13px", color: "#444" }}>
             No account?{" "}
             <Link href="/signup" style={{ color: "#888", textDecoration: "none" }}>Sign up</Link>
           </span>
