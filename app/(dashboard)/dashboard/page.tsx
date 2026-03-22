@@ -71,6 +71,10 @@ export default function DashboardPage() {
       <nav style={{ borderBottom:"1px solid #222",padding:"0 40px" }}>
         <div style={{ maxWidth:"1200px",margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:"60px" }}>
           <Link href="/dashboard"><img src="/logo.jpg" alt="ZaxScape" style={{ height:"52px" }} /></Link>
+            <div style={{ display:"flex",gap:"20px",alignItems:"center" }}>
+              <Link href="/dashboard" style={{ fontFamily:'IBM Plex Mono, monospace',fontSize:"12px",color:"#888",textDecoration:"none" }}>Properties</Link>
+              <Link href="/overages" style={{ fontFamily:'IBM Plex Mono, monospace',fontSize:"12px",color:"#888",textDecoration:"none" }}>Overages</Link>
+            </div>
           <div style={{ display:"flex",alignItems:"center",gap:"24px" }}>
             <span style={{ ...m,fontSize: "13px",color:"#666",textTransform:"uppercase" }}>{(profile?.property_type || "commercial")} · Boston MA</span>
             <button onClick={async () => { await supabase.auth.signOut(); router.push("/login") }}
