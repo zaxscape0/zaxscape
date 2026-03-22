@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 function SignupForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [propertyType, setPropertyType] = useState<"commercial" | "residential" | null>(null)
+  const [propertyType, setPropertyType] = useState<"commercial" | "residential" | "both" | null>(null)
   const [step, setStep] = useState<"account" | "type">("account")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
@@ -15,7 +15,6 @@ function SignupForm() {
 
   async function handleAccount(e: React.FormEvent) {
     e.preventDefault()
-    if (!email || !password) return
     setStep("type")
   }
 
@@ -31,25 +30,39 @@ function SignupForm() {
     if (error) { setError(error.message); setLoading(false); return }
 
     if (data.user) {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: "access", email, propertyType }),
-      })
-      const { url } = await res.json()
-      if (url) window.location.href = url
-      else router.push("/dashboard")
+      // Save property type to profile
+      const ptype = propertyType === "both" ? "both" : propertyType
+      await supabase.from("profiles").upsert({ id: data.user.id, email, property_type: ptype, plan_active: propertyType !== "both" })
+
+      if (propertyType === "both") {
+        // Redirect to Stripe for $4.99/mo
+        const res = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan: "access", email, propertyType: "both" }),
+        })
+        const { url } = await res.json()
+        if (url) { window.location.href = url; return }
+      } else {
+        router.push("/dashboard")
+      }
     }
     setLoading(false)
   }
 
   const m: any = { fontFamily: "'Courier New', monospace" }
 
+  const opts = [
+    { id: "commercial" as const, num: "01", label: "Commercial", desc: "Retail, office, industrial, mixed-use", price: "Free" },
+    { id: "residential" as const, num: "02", label: "Residential", desc: "Single & multi-family homes", price: "Free" },
+    { id: "both" as const, num: "03", label: "Both", desc: "Access all property types", price: "$4.99/mo" },
+  ]
+
   return (
     <div>
       {error && (
         <div style={{ background: "#0a0a0a", border: "1px solid #f44", padding: "12px 16px", marginBottom: "24px" }}>
-          <span style={{ ...m, fontSize: "12px", color: "#f66" }}>{error}</span>
+          <span style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", color: "#f66" }}>{error}</span>
         </div>
       )}
 
@@ -69,32 +82,32 @@ function SignupForm() {
         </form>
       ) : (
         <div>
-          <div style={{ ...m, fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "20px" }}>// what are you looking for?</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: "#222", marginBottom: "32px" }}>
-            {([
-              { id: "commercial", label: "Commercial", desc: "Retail, office, industrial, mixed-use" },
-              { id: "residential", label: "Residential", desc: "Single & multi-family homes" },
-            ] as const).map(opt => (
+          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "20px" }}>// what are you looking for?</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1px", background: "#222", marginBottom: "32px" }}>
+            {opts.map(opt => (
               <button key={opt.id} type="button" onClick={() => setPropertyType(opt.id)}
                 style={{
                   background: propertyType === opt.id ? "#fff" : "#000",
                   color: propertyType === opt.id ? "#000" : "#fff",
-                  border: "none", padding: "28px 20px", cursor: "pointer", textAlign: "left",
+                  border: "none", padding: "20px 24px", cursor: "pointer", textAlign: "left",
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
                 }}>
-                <div style={{ ...m, fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.15em", color: propertyType === opt.id ? "#444" : "#666", marginBottom: "8px" }}>{opt.id === "commercial" ? "01" : "02"}</div>
-                <div style={{ fontSize: "18px", fontWeight: 700, marginBottom: "6px" }}>{opt.label}</div>
-                <div style={{ ...m, fontSize: "10px", color: propertyType === opt.id ? "#555" : "#555" }}>{opt.desc}</div>
+                <div>
+                  <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.15em", color: propertyType === opt.id ? "#555" : "#555", marginBottom: "4px" }}>{opt.num}</div>
+                  <div style={{ fontSize: "17px", fontWeight: 700, marginBottom: "2px" }}>{opt.label}</div>
+                  <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", color: propertyType === opt.id ? "#555" : "#666" }}>{opt.desc}</div>
+                </div>
+                <div style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", fontWeight: 700, color: propertyType === opt.id ? "#000" : opt.id === "both" ? "#fff" : "#888", whiteSpace: "nowrap", marginLeft: "16px" }}>
+                  {opt.price}
+                </div>
               </button>
             ))}
           </div>
-          <div style={{ ...m, fontSize: "11px", color: "#555", marginBottom: "24px" }}>
-            You can change this anytime in settings.
-          </div>
           <button onClick={handleSubmit} disabled={!propertyType || loading}
             className="zax-btn zax-btn-primary" style={{ width: "100%", textAlign: "center", opacity: !propertyType ? 0.4 : 1 }}>
-            {loading ? "Creating account..." : "Start for $4.99/mo →"}
+            {loading ? "Creating account..." : propertyType === "both" ? "Continue to checkout →" : "Create free account →"}
           </button>
-          <button onClick={() => setStep("account")} style={{ ...m, marginTop: "16px", width: "100%", fontSize: "11px", color: "#444", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase" }}>
+          <button onClick={() => setStep("account")} style={{ fontFamily: "'Courier New', monospace", marginTop: "16px", width: "100%", fontSize: "11px", color: "#444", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase" }}>
             ← Back
           </button>
         </div>

@@ -26,11 +26,11 @@ export default function LandingPage() {
           Live property data from Boston public records. Filter by motivation score, property type, and location. Unlock owner contact info on demand.
         </p>
         <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-          <Link href="/signup" style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.1em", background: "#fff", color: "#000", padding: "16px 32px", textDecoration: "none", fontWeight: 700 }}>Start for $4.99/mo →</Link>
+          <Link href="/signup" style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.1em", background: "#fff", color: "#000", padding: "16px 32px", textDecoration: "none", fontWeight: 700 }}>Get started free →</Link>
           <Link href="/login" style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.1em", border: "1px solid #333", color: "#888", padding: "16px 32px", textDecoration: "none" }}>Sign in</Link>
         </div>
         <div style={{ marginTop: "24px", fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#444" }}>
-          21,000+ Boston properties tracked · Commercial &amp; residential · Updated daily
+          21,000+ Boston properties · Commercial or residential free · Both for $4.99/mo
         </div>
       </section>
 
@@ -40,7 +40,7 @@ export default function LandingPage() {
           {[
             { n: "21,000+", label: "Boston properties" },
             { n: "2,500+", label: "High-motivation leads" },
-            { n: "$4.99", label: "Per month, all access" },
+            { n: "Free", label: "Commercial or residential" },
           ].map((s, i) => (
             <div key={i} style={{ background: "#000", padding: "48px 40px" }}>
               <div style={{ fontSize: "48px", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: "8px" }}>{s.n}</div>
@@ -73,10 +73,10 @@ export default function LandingPage() {
       <section style={{ borderTop: "1px solid #111", padding: "100px 40px" }}>
         <div style={{ maxWidth: "480px", margin: "0 auto", textAlign: "center" }}>
           <div style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#555", marginBottom: "24px" }}>// pricing</div>
-          <h2 style={{ fontSize: "40px", fontWeight: 700, letterSpacing: "-0.02em", margin: "0 0 16px" }}>$4.99 / month</h2>
-          <p style={{ color: "#888", fontSize: "16px", margin: "0 0 40px", lineHeight: 1.6 }}>Full access to all properties, filters, and motivation scores. Contacts unlocked separately.</p>
+          <h2 style={{ fontSize: "40px", fontWeight: 700, letterSpacing: "-0.02em", margin: "0 0 16px" }}>Free to start</h2>
+          <p style={{ color: "#888", fontSize: "16px", margin: "0 0 40px", lineHeight: 1.6 }}>Commercial or residential access is free. Unlock both for $4.99/mo. Contact info unlocked separately per lead.</p>
           <div style={{ border: "1px solid #222", padding: "32px", marginBottom: "32px", textAlign: "left" }}>
-            {["21,000+ Boston properties","Commercial or residential (your choice)","Motivation score + signals","Filter by zip, value, year built","Owner name + mailing address","Contact unlock available per lead"].map((f, i) => (
+            {["21,000+ Boston properties","Commercial or residential — free","Both property types — $4.99/mo","Motivation score + signals","Filter by zip, value, year built","Owner name + mailing address","Contact unlock $0.99/lead"].map((f, i) => (
               <div key={i} style={{ display: "flex", gap: "12px", marginBottom: i < 5 ? "12px" : 0 }}>
                 <span style={{ color: "#4ade80", fontWeight: 700 }}>✓</span>
                 <span style={{ color: "#bbb", fontSize: "14px" }}>{f}</span>
