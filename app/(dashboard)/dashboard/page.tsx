@@ -80,7 +80,7 @@ export default function DashboardPage() {
           <h1 style={{ fontSize: "34px",fontWeight:700,margin:"0 0 4px",letterSpacing:"-0.02em" }}>Property Intelligence</h1>
           <div style={{ ...m,fontSize: "13px",color:"#666" }}>{total.toLocaleString()} properties · sorted by motivation score</div>
         </div>
-        <div style={{ border:"1px solid #1a1a1a",padding:"20px 24px",marginBottom:"32px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr auto",gap:"16px",alignItems:"end" }}>
+        <div className="filter-grid" style={{ border:"1px solid #1a1a1a",padding:"20px 16px",marginBottom:"32px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr auto",gap:"12px",alignItems:"end" }}>
           {([["Search owner", search, setSearch, "Owner name..."],["ZIP code", zip, setZip, "02101"],["Min value ($)", minValue, setMinValue, "200000"]] as any[]).map(([lbl,val,set,ph]: any) => (
             <div key={lbl}><label style={{ ...m,fontSize: "12px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#555",display:"block",marginBottom:"8px" }}>{lbl}</label>
             <input value={val} onChange={e => set(e.target.value)} onKeyDown={e => e.key === "Enter" && applyFilter()} placeholder={ph} className="zax-input" style={{ marginBottom:0 }} /></div>
@@ -92,7 +92,7 @@ export default function DashboardPage() {
           <button onClick={applyFilter} className="zax-btn zax-btn-primary" style={{ whiteSpace:"nowrap",padding:"12px 20px",fontSize: "13px" }}>Filter</button>
         </div>
         <div style={{ border:"1px solid #1a1a1a" }}>
-          <div style={{ display:"grid",gridTemplateColumns:"2fr 1.5fr 1fr 1fr 1fr 72px",borderBottom:"1px solid #1a1a1a",padding:"10px 24px",background:"#040404" }}>
+          <div className="prop-table-header" style={{ display:"grid",gridTemplateColumns:"2fr 1.5fr 1fr 1fr 1fr 72px",borderBottom:"1px solid #1a1a1a",padding:"10px 24px",background:"#040404" }}>
             {["Address","Owner","Value","Year","ZIP","Score"].map(h => (
               <div key={h} style={{ ...m,fontSize: "12px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#444" }}>{h}</div>
             ))}
@@ -101,7 +101,7 @@ export default function DashboardPage() {
             <div style={{ padding:"60px",textAlign:"center",color:"#555" }}>No properties found.</div>
           ) : properties.map((p, i) => (
             <Link key={p.id} href={"/properties/" + p.id}
-              style={{ display:"grid",gridTemplateColumns:"2fr 1.5fr 1fr 1fr 1fr 72px",padding:"14px 24px",borderBottom:i<properties.length-1?"1px solid #0d0d0d":"none",textDecoration:"none",color:"inherit" }}>
+              className="prop-table-row" style={{ display:"grid",gridTemplateColumns:"2fr 1.5fr 1fr 1fr 1fr 72px",padding:"14px 24px",borderBottom:i<properties.length-1?"1px solid #0d0d0d":"none",textDecoration:"none",color:"inherit" }}>
               <div>
                 <div style={{ fontSize: "16px",fontWeight:500,color:"#ddd",marginBottom:"2px" }}>{p.address}</div>
                 {p.signals && <div style={{ ...m,fontSize: "12px",color:"#555" }}>{p.signals.split(",")[0]}</div>}

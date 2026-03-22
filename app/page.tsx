@@ -17,7 +17,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section style={{ maxWidth: "1100px", margin: "0 auto", padding: "120px 40px 100px" }}>
+      <section style={{ maxWidth: "1100px", margin: "0 auto", padding: "60px 20px 60px" }}>
         <div style={{ fontFamily: "'Courier New', monospace", fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#555", marginBottom: "24px" }}>// Massachusetts property intelligence</div>
         <h1 style={{ fontSize: "clamp(38px, 6vw, 74px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05, margin: "0 0 32px", maxWidth: "800px" }}>
           Find motivated sellers<br />before anyone else does.
@@ -36,7 +36,7 @@ export default function LandingPage() {
 
       {/* Stats */}
       <section style={{ borderTop: "1px solid #111", borderBottom: "1px solid #111" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1px", background: "#111" }}>
+        <div className="stats-grid" style={{ maxWidth: "1100px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1px", background: "#111" }}>
           {[
             { n: "21,000+", label: "Boston properties" },
             { n: "2,500+", label: "High-motivation leads" },
@@ -53,7 +53,7 @@ export default function LandingPage() {
       {/* Features */}
       <section style={{ maxWidth: "1100px", margin: "0 auto", padding: "100px 40px" }}>
         <div style={{ fontFamily: "'Courier New', monospace", fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#555", marginBottom: "48px" }}>// what you get</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1px", background: "#111" }}>
+        <div className="feature-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1px", background: "#111" }}>
           {[
             { title: "Motivation scoring", body: "Every property is scored on 5 signals: individual ownership, age, absentee status, land value ratio, and equity. Filter to only the most motivated sellers." },
             { title: "Commercial or residential", body: "Choose your focus when you sign up. Commercial mixed-use, retail, and industrial — or residential single/multi-family. Switch anytime." },

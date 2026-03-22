@@ -83,7 +83,7 @@ function SignupForm() {
       ) : (
         <div>
           <div style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#666", marginBottom: "20px" }}>// what are you looking for?</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "1px", background: "#222", marginBottom: "32px" }}>
+          <div className="signup-options" style={{ display: "flex", flexDirection: "column", gap: "1px", background: "#222", marginBottom: "32px" }}>
             {opts.map(opt => (
               <button key={opt.id} type="button" onClick={() => setPropertyType(opt.id)}
                 style={{

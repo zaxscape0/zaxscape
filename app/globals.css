@@ -69,3 +69,51 @@ body {
   display: block;
   margin-bottom: 8px;
 }
+
+/* ── Mobile responsive ─────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+@media (max-width: 768px) {
+  /* Nav */
+  nav { padding: 0 16px !important; }
+  nav img { height: 40px !important; }
+
+  /* Main content padding */
+  main { padding: 24px 16px !important; }
+
+  /* Hero headings */
+  h1 { font-size: 28px !important; }
+  h2 { font-size: 24px !important; }
+
+  /* Stat grid → single column */
+  .stats-grid { grid-template-columns: 1fr !important; }
+
+  /* Feature grid → single column */
+  .feature-grid { grid-template-columns: 1fr !important; }
+}
+
+/* Property table — hide on mobile, use card layout instead */
+@media (max-width: 700px) {
+  .prop-table-header { display: none !important; }
+  .prop-table-row {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+    padding: 16px !important;
+    border-bottom: 1px solid #111 !important;
+  }
+  .prop-table-row > div { align-self: auto !important; }
+  .prop-col-owner::before { content: "Owner: "; color: #555; font-size: 11px; }
+  .prop-col-value::before { content: "Value: "; color: #555; font-size: 11px; }
+  .prop-col-year::before { content: "Year: "; color: #555; font-size: 11px; }
+  .prop-col-zip::before { content: "ZIP: "; color: #555; font-size: 11px; }
+
+  /* Filter grid → 2 cols on mobile */
+  .filter-grid { grid-template-columns: 1fr 1fr !important; }
+  .filter-grid > :last-child { grid-column: 1 / -1; }
+
+  /* Signup options */
+  .signup-options { flex-direction: column !important; }
+
+  /* Property detail grid */
+  .detail-grid { grid-template-columns: 1fr !important; }
+}

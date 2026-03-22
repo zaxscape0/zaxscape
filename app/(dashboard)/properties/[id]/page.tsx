@@ -54,7 +54,7 @@ export default function PropertyPage() {
           <Link href="/dashboard" style={{ ...m,fontSize: "13px",textTransform:"uppercase",color:"#555",textDecoration:"none" }}>← Back</Link>
         </div>
       </nav>
-      <main style={{ maxWidth:"900px",margin:"0 auto",padding:"60px 40px" }}>
+      <main style={{ maxWidth:"900px",margin:"0 auto",padding:"40px 20px" }}>
         <div style={{ borderBottom:"1px solid #222",paddingBottom:"32px",marginBottom:"40px" }}>
           <div style={{ ...m,fontSize: "12px",textTransform:"uppercase",letterSpacing:"0.2em",color:"#555",marginBottom:"12px" }}>Boston, MA · {property.zip}</div>
           <h1 style={{ fontSize: "38px",fontWeight:700,margin:"0 0 8px",letterSpacing:"-0.02em" }}>{property.address}</h1>
@@ -64,7 +64,7 @@ export default function PropertyPage() {
             <span style={{ ...m,fontSize: "15px",fontWeight:700,color:scoreColor(property.motivation_score) }}>Motivation {property.motivation_score}/8</span>
           </div>
         </div>
-        <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"1px",background:"#1a1a1a",marginBottom:"40px" }}>
+        <div className="detail-grid" style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"1px",background:"#1a1a1a",marginBottom:"40px" }}>
           {fields.map(([label, val]) => (
             <div key={String(label)} style={{ background:"#000",padding:"24px 28px" }}>
               <div style={{ ...m,fontSize: "12px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#555",marginBottom:"8px" }}>{label}</div>
