@@ -24,7 +24,7 @@ export default function DashboardPage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { router.push("/login"); return }
       supabase.from("profiles").select("*").eq("id", session.user.id).single()
-        .then(({ data }) => { setProfile(data); setUnlimited(!!data?.unlimited); load(data?.property_type || "commercial", 0, "", "0", "", "") })
+        .then(({ data }) => { setProfile(data); setUnlimited(!!data?.unlimited); load(data?.property_type || "commercial", 0, "", "", "0", "", "") })
     })
   }, [])
 
