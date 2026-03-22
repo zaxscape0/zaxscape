@@ -9,6 +9,7 @@ export default function DashboardPage() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState<any>(null)
+  const [city, setCity] = useState("")
   const [zip, setZip] = useState("")
   const [minScore, setMinScore] = useState("0")
   const [minValue, setMinValue] = useState("")
@@ -27,7 +28,7 @@ export default function DashboardPage() {
     })
   }, [])
 
-  async function load(ptype: string, pg: number, z: string, ms: string, mv: string, sr: string) {
+  async function load(ptype: string, pg: number, c: string, z: string, ms: string, mv: string, sr: string) {
     setLoading(true)
     let q = supabase.from("properties")
       .select("id,address,zip,owner,assessed_value,yr_built,motivation_score,signals", { count: "exact" })
@@ -35,6 +36,7 @@ export default function DashboardPage() {
       .order("assessed_value", { ascending: false })
       .range(pg * PAGE, unlimited ? (pg + 1) * PAGE - 1 : FREE_LIMIT - 1)
     if (ptype && ptype !== "both") q = q.eq("property_type", ptype)
+    if (c) q = q.eq("city", c)
     if (z) q = q.eq("zip", z)
     if (parseInt(ms) > 0) q = q.gte("motivation_score", parseInt(ms))
     if (mv) q = q.gte("assessed_value", parseInt(mv))
@@ -47,12 +49,12 @@ export default function DashboardPage() {
 
   function applyFilter() {
     setPage(0)
-    load(profile?.property_type || "commercial", 0, zip, minScore, minValue, search)
+    load(profile?.property_type || "commercial", 0, city, zip, minScore, minValue, search)
   }
 
   function goPage(p: number) {
     setPage(p)
-    load(profile?.property_type || "commercial", p, zip, minScore, minValue, search)
+    load(profile?.property_type || "commercial", p, city, zip, minScore, minValue, search)
   }
 
   const m: any = { fontFamily: "'Courier New', monospace" }
@@ -82,7 +84,15 @@ export default function DashboardPage() {
           <h1 style={{ fontSize: "34px",fontWeight:700,margin:"0 0 4px",letterSpacing:"-0.02em" }}>Property Intelligence</h1>
           <div style={{ ...m,fontSize: "13px",color:"#666" }}>{total.toLocaleString()} properties · sorted by motivation score</div>
         </div>
-        <div className="filter-grid" style={{ border:"1px solid #1a1a1a",padding:"20px 16px",marginBottom:"32px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr auto",gap:"12px",alignItems:"end" }}>
+        <div className="filter-grid" style={{ border:"1px solid #1a1a1a",padding:"20px 16px",marginBottom:"32px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr auto",gap:"12px",alignItems:"end" }}>
+          <div><label style={{ ...m,fontSize:"10px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#555",display:"block",marginBottom:"8px" }}>City</label>
+          <select value={city} onChange={e => setCity(e.target.value)} className="zax-input" style={{ marginBottom:0 }}>
+            <option value="">All cities</option>
+            <option value="Boston">Boston</option>
+            <option value="Cambridge">Cambridge</option>
+            <option value="Worcester">Worcester</option>
+            <option value="Springfield">Springfield</option>
+          </select></div>
           {([["Search owner", search, setSearch, "Owner name..."],["ZIP code", zip, setZip, "02101"],["Min value ($)", minValue, setMinValue, "200000"]] as any[]).map(([lbl,val,set,ph]: any) => (
             <div key={lbl}><label style={{ ...m,fontSize: "12px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#555",display:"block",marginBottom:"8px" }}>{lbl}</label>
             <input value={val} onChange={e => set(e.target.value)} onKeyDown={e => e.key === "Enter" && applyFilter()} placeholder={ph} className="zax-input" style={{ marginBottom:0 }} /></div>
@@ -104,7 +114,7 @@ export default function DashboardPage() {
         )}
         <div style={{ border:"1px solid #1a1a1a" }}>
           <div className="prop-table-header" style={{ display:"grid",gridTemplateColumns:"2fr 1.5fr 1fr 1fr 1fr 72px",borderBottom:"1px solid #1a1a1a",padding:"10px 24px",background:"#040404" }}>
-            {["Address","Owner","Value","Year","ZIP","Score"].map(h => (
+            {["Address","Owner","Value","Year","City","Score"].map(h => (
               <div key={h} style={{ ...m,fontSize: "12px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#444" }}>{h}</div>
             ))}
           </div>
