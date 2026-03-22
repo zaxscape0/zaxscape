@@ -5,147 +5,124 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
-  const [competitors, setCompetitors] = useState<any[]>([])
-  const [changes, setChanges] = useState<any[]>([])
-  const [jobs, setJobs] = useState<any[]>([])
+  const [properties, setProperties] = useState<any[]>([])
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState<any>(null)
+  const [zip, setZip] = useState("")
+  const [minScore, setMinScore] = useState("0")
+  const [minValue, setMinValue] = useState("")
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(0)
   const router = useRouter()
+  const PAGE = 25
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT" || (!session && event !== "INITIAL_SESSION")) {
-        router.push("/login")
-      } else if (session) {
-        loadData()
-      }
-    })
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) loadData()
-      else setTimeout(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          if (!session) router.push("/login")
-        })
-      }, 1500)
+      if (!session) { router.push("/login"); return }
+      supabase.from("profiles").select("*").eq("id", session.user.id).single()
+        .then(({ data }) => { setProfile(data); load(data?.property_type || "commercial", 0, "", "0", "", "") })
     })
-    return () => subscription.unsubscribe()
   }, [])
 
-  async function loadData() {
-    const { data: c } = await supabase.from("competitors").select("*").order("created_at", { ascending: false })
-    const { data: s } = await supabase.from("snapshots").select("*, competitors(name,url)")
-      .not("changes_detected", "is", null).order("scanned_at", { ascending: false }).limit(10)
-    const { data: j } = await supabase.from("job_postings").select("*, competitors(name)")
-      .order("first_seen_at", { ascending: false }).limit(20)
-    setCompetitors(c || [])
-    setChanges(s || [])
-    setJobs(j || [])
+  async function load(ptype: string, pg: number, z: string, ms: string, mv: string, sr: string) {
+    setLoading(true)
+    let q = supabase.from("properties")
+      .select("id,address,zip,owner,assessed_value,yr_built,motivation_score,signals", { count: "exact" })
+      .order("motivation_score", { ascending: false })
+      .order("assessed_value", { ascending: false })
+      .range(pg * PAGE, (pg + 1) * PAGE - 1)
+    if (ptype && ptype !== "both") q = q.eq("property_type", ptype)
+    if (z) q = q.eq("zip", z)
+    if (parseInt(ms) > 0) q = q.gte("motivation_score", parseInt(ms))
+    if (mv) q = q.gte("assessed_value", parseInt(mv))
+    if (sr) q = q.ilike("owner", "%" + sr + "%")
+    const { data, count } = await q
+    setProperties(data || [])
+    setTotal(count || 0)
     setLoading(false)
   }
 
+  function applyFilter() {
+    setPage(0)
+    load(profile?.property_type || "commercial", 0, zip, minScore, minValue, search)
+  }
+
+  function goPage(p: number) {
+    setPage(p)
+    load(profile?.property_type || "commercial", p, zip, minScore, minValue, search)
+  }
+
+  const m: any = { fontFamily: "'Courier New', monospace" }
+  const scoreColor = (s: number) => s >= 6 ? "#4ade80" : s >= 4 ? "#facc15" : "#888"
+
   if (loading) return (
-    <div style={{ minHeight: "100vh", background: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <span style={{ fontFamily: "'Courier New', monospace", fontSize: "12px", color: "#777", letterSpacing: "0.1em" }}>loading...</span>
+    <div style={{ minHeight:"100vh",background:"#000",display:"flex",alignItems:"center",justifyContent:"center" }}>
+      <span style={{ ...m,fontSize:"12px",color:"#555" }}>loading...</span>
     </div>
   )
 
-  const active = competitors.filter(c => c.status === "active").length
-
   return (
-    <div style={{ minHeight: "100vh", background: "#000", color: "#fff" }}>
-      {/* Nav */}
-      <nav style={{ borderBottom: "1px solid #222", padding: "0 40px" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: "60px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
-            <Link href="/dashboard"><img src="/logo.jpg" alt="ZaxScape" style={{ height: "62px", display: "block" }} /></Link>
-            <Link href="/dashboard" style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#fff", textDecoration: "none" }}>Dashboard</Link>
-            <Link href="/competitors" style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#999", textDecoration: "none" }}>Competitors</Link>
+    <div style={{ minHeight:"100vh",background:"#000",color:"#fff" }}>
+      <nav style={{ borderBottom:"1px solid #222",padding:"0 40px" }}>
+        <div style={{ maxWidth:"1200px",margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:"60px" }}>
+          <Link href="/dashboard"><img src="/logo.jpg" alt="ZaxScape" style={{ height:"52px" }} /></Link>
+          <div style={{ display:"flex",alignItems:"center",gap:"24px" }}>
+            <span style={{ ...m,fontSize:"11px",color:"#666",textTransform:"uppercase" }}>{(profile?.property_type || "commercial")} · Boston MA</span>
+            <button onClick={async () => { await supabase.auth.signOut(); router.push("/login") }}
+              style={{ ...m,fontSize:"11px",textTransform:"uppercase",color:"#555",background:"none",border:"none",cursor:"pointer" }}>Sign out</button>
           </div>
-          <button onClick={async () => { await supabase.auth.signOut(); router.push("/login") }}
-            style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#777", background: "none", border: "none", cursor: "pointer" }}>
-            Sign out
-          </button>
         </div>
       </nav>
-
-      <main style={{ maxWidth: "1100px", margin: "0 auto", padding: "60px 40px" }}>
-        {/* Header */}
-        <div style={{ borderBottom: "1px solid #222", paddingBottom: "40px", marginBottom: "60px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-          <div>
-            <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#999", marginBottom: "8px" }}>// overview</div>
-            <h1 style={{ fontSize: "36px", fontWeight: 700, margin: 0, letterSpacing: "-0.02em" }}>Dashboard</h1>
-          </div>
-          <Link href="/competitors" className="zax-btn zax-btn-primary">+ Add competitor</Link>
+      <main style={{ maxWidth:"1200px",margin:"0 auto",padding:"48px 40px" }}>
+        <div style={{ marginBottom:"40px" }}>
+          <div style={{ ...m,fontSize:"10px",letterSpacing:"0.2em",textTransform:"uppercase",color:"#555",marginBottom:"8px" }}>// motivated sellers · Boston MA</div>
+          <h1 style={{ fontSize:"32px",fontWeight:700,margin:"0 0 4px",letterSpacing:"-0.02em" }}>Property Intelligence</h1>
+          <div style={{ ...m,fontSize:"11px",color:"#666" }}>{total.toLocaleString()} properties · sorted by motivation score</div>
         </div>
-
-        {/* Stats */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1px", background: "#222", marginBottom: "60px" }}>
-          <div style={{ background: "#000", padding: "32px" }}>
-            <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#777", marginBottom: "16px" }}>01 — monitored</div>
-            <div style={{ fontSize: "48px", fontWeight: 700, letterSpacing: "-0.02em" }}>{active}</div>
-          </div>
-          <div style={{ background: "#000", padding: "32px" }}>
-            <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#777", marginBottom: "16px" }}>02 — changes detected</div>
-            <div style={{ fontSize: "48px", fontWeight: 700, letterSpacing: "-0.02em" }}>{changes.length}</div>
-          </div>
-          <div style={{ background: "#000", padding: "32px" }}>
-            <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#777", marginBottom: "16px" }}>03 — last scan</div>
-            <div style={{ fontSize: "24px", fontWeight: 700, letterSpacing: "-0.02em" }}>
-              {competitors[0]?.last_scanned_at ? new Date(competitors[0].last_scanned_at).toLocaleDateString() : "—"}
-            </div>
-          </div>
+        <div style={{ border:"1px solid #1a1a1a",padding:"20px 24px",marginBottom:"32px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr auto",gap:"16px",alignItems:"end" }}>
+          {([["Search owner", search, setSearch, "Owner name..."],["ZIP code", zip, setZip, "02101"],["Min value ($)", minValue, setMinValue, "200000"]] as any[]).map(([lbl,val,set,ph]: any) => (
+            <div key={lbl}><label style={{ ...m,fontSize:"10px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#555",display:"block",marginBottom:"8px" }}>{lbl}</label>
+            <input value={val} onChange={e => set(e.target.value)} onKeyDown={e => e.key === "Enter" && applyFilter()} placeholder={ph} className="zax-input" style={{ marginBottom:0 }} /></div>
+          ))}
+          <div><label style={{ ...m,fontSize:"10px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#555",display:"block",marginBottom:"8px" }}>Min score</label>
+          <select value={minScore} onChange={e => setMinScore(e.target.value)} className="zax-input" style={{ marginBottom:0 }}>
+            <option value="0">Any</option><option value="3">3+ good</option><option value="5">5+ strong</option><option value="7">7+ hot</option>
+          </select></div>
+          <button onClick={applyFilter} className="zax-btn zax-btn-primary" style={{ whiteSpace:"nowrap",padding:"12px 20px",fontSize:"11px" }}>Filter</button>
         </div>
-
-        {/* Recent Changes */}
-        <div>
-          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#999", marginBottom: "24px" }}>// recent changes</div>
-          {changes.length === 0 ? (
-            <div style={{ border: "1px solid #222", padding: "60px", textAlign: "center" }}>
-              <div style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#777", marginBottom: "16px" }}>// no changes detected yet</div>
-              <p style={{ color: "#999", margin: "0 0 24px", fontSize: "15px" }}>Add competitors to start monitoring.</p>
-              <Link href="/competitors" className="zax-btn zax-btn-secondary">Add competitor →</Link>
-            </div>
-          ) : (
-            <div style={{ border: "1px solid #222" }}>
-              {changes.map((s: any, i: number) => (
-                <div key={s.id} style={{ padding: "24px 32px", borderBottom: i < changes.length - 1 ? "1px solid #1a1a1a" : "none" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-                    <div>
-                      <span style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: "#999", marginRight: "16px" }}>{s.competitors?.name}</span>
-                    </div>
-                    <span style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#777" }}>{new Date(s.scanned_at).toLocaleDateString()}</span>
-                  </div>
-                  <p style={{ color: "#bbb", fontSize: "14px", lineHeight: 1.6, margin: "0 0 12px" }}>{s.changes_detected?.summary}</p>
-                  <a href={s.competitors?.url} target="_blank" rel="noopener noreferrer"
-                    style={{ fontFamily: "'Courier New', monospace", fontSize: "11px", color: "#888", textDecoration: "none" }}>
-                    View site →
-                  </a>
-                </div>
-              ))}
-            </div>
-          )}
+        <div style={{ border:"1px solid #1a1a1a" }}>
+          <div style={{ display:"grid",gridTemplateColumns:"2fr 1.5fr 1fr 1fr 1fr 72px",borderBottom:"1px solid #1a1a1a",padding:"10px 24px",background:"#040404" }}>
+            {["Address","Owner","Value","Year","ZIP","Score"].map(h => (
+              <div key={h} style={{ ...m,fontSize:"10px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#444" }}>{h}</div>
+            ))}
+          </div>
+          {properties.length === 0 ? (
+            <div style={{ padding:"60px",textAlign:"center",color:"#555" }}>No properties found.</div>
+          ) : properties.map((p, i) => (
+            <Link key={p.id} href={"/properties/" + p.id}
+              style={{ display:"grid",gridTemplateColumns:"2fr 1.5fr 1fr 1fr 1fr 72px",padding:"14px 24px",borderBottom:i<properties.length-1?"1px solid #0d0d0d":"none",textDecoration:"none",color:"inherit" }}>
+              <div>
+                <div style={{ fontSize:"14px",fontWeight:500,color:"#ddd",marginBottom:"2px" }}>{p.address}</div>
+                {p.signals && <div style={{ ...m,fontSize:"10px",color:"#555" }}>{p.signals.split(",")[0]}</div>}
+              </div>
+              <div style={{ fontSize:"13px",color:"#999",alignSelf:"center" }}>{p.owner || "—"}</div>
+              <div style={{ ...m,fontSize:"13px",color:"#bbb",alignSelf:"center" }}>{p.assessed_value ? "$"+(Math.round(p.assessed_value/1000))+"k" : "—"}</div>
+              <div style={{ ...m,fontSize:"13px",color:"#777",alignSelf:"center" }}>{p.yr_built || "—"}</div>
+              <div style={{ ...m,fontSize:"13px",color:"#777",alignSelf:"center" }}>{p.zip}</div>
+              <div style={{ alignSelf:"center" }}>
+                <span style={{ ...m,fontSize:"13px",fontWeight:700,color:scoreColor(p.motivation_score) }}>{p.motivation_score}</span>
+                <span style={{ ...m,fontSize:"10px",color:"#333" }}>/8</span>
+              </div>
+            </Link>
+          ))}
         </div>
-        {/* Job Postings */}
-        <div style={{ marginTop: "60px" }}>
-          <div style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#999", marginBottom: "24px" }}>// competitor job postings</div>
-          {jobs.length === 0 ? (
-            <div style={{ border: "1px solid #222", padding: "40px", textAlign: "center" }}>
-              <p style={{ color: "#999", margin: 0, fontSize: "14px" }}>No job postings yet. Open a competitor and click "Gather intel".</p>
-            </div>
-          ) : (
-            <div style={{ border: "1px solid #222" }}>
-              {jobs.map((j: any, i: number) => (
-                <div key={j.id} style={{ padding: "16px 32px", borderBottom: i < jobs.length - 1 ? "1px solid #1a1a1a" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                    <span style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", textTransform: "uppercase", color: "#777", minWidth: "100px" }}>{j.competitors?.name}</span>
-                    <span style={{ fontSize: "14px", fontWeight: 500, color: j.is_new ? "#4ade80" : "#ccc" }}>{j.title}</span>
-                    {j.is_new && <span style={{ fontFamily: "'Courier New', monospace", fontSize: "9px", textTransform: "uppercase", background: "#4ade80", color: "#000", padding: "2px 6px", fontWeight: 700 }}>NEW</span>}
-                    {j.department && <span style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", color: "#777" }}>{j.department}</span>}
-                  </div>
-                  <span style={{ fontFamily: "'Courier New', monospace", fontSize: "10px", color: "#666" }}>{new Date(j.first_seen_at).toLocaleDateString()}</span>
-                </div>
-              ))}
-            </div>
-          )}
+        <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:"24px" }}>
+          <div style={{ ...m,fontSize:"11px",color:"#555" }}>Showing {page*PAGE+1}–{Math.min((page+1)*PAGE,total)} of {total.toLocaleString()}</div>
+          <div style={{ display:"flex",gap:"8px" }}>
+            <button onClick={() => goPage(page-1)} disabled={page===0} className="zax-btn zax-btn-secondary" style={{ fontSize:"11px",padding:"8px 16px",opacity:page===0?0.3:1 }}>← Prev</button>
+            <button onClick={() => goPage(page+1)} disabled={(page+1)*PAGE>=total} className="zax-btn zax-btn-secondary" style={{ fontSize:"11px",padding:"8px 16px",opacity:(page+1)*PAGE>=total?0.3:1 }}>Next →</button>
+          </div>
         </div>
       </main>
     </div>
