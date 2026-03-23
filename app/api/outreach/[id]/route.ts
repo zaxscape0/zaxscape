@@ -1,7 +1,8 @@
 import { createServerSupabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const body = await req.json()
   const db = createServerSupabase()
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
@@ -15,16 +16,15 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (body.last_contact_at !== undefined) update.last_contact_at = body.last_contact_at
 
   const { data, error } = await db.from('outreach_contacts')
-    .update(update)
-    .eq('id', params.id)
-    .select().single()
+    .update(update).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const db = createServerSupabase()
-  const { error } = await db.from('outreach_contacts').delete().eq('id', params.id)
+  const { error } = await db.from('outreach_contacts').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })
 }
