@@ -38,8 +38,10 @@ export default function OveragesPage() {
     if (sf) q = q.eq('status', sf)
     if (s) q = q.ilike('owner_name', `%${s}%`)
     if (ms && parseInt(ms) > 0) q = q.gte('surplus_amount', parseInt(ms))
-    const today = new Date().toISOString().slice(0, 10)
-    if (!se) q = q.gt('deadline_date', today)
+    if (!se) {
+      const today = new Date().toISOString().slice(0, 10)
+      q = q.or(`deadline_date.gt.${today},deadline_date.is.null`)
+    }
     q = q.order('surplus_amount', { ascending: false })
          .range(pg * PAGE, pg * PAGE + PAGE - 1)
     const { data, count } = await q
