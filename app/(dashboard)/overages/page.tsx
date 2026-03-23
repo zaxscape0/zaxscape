@@ -26,9 +26,11 @@ export default function OveragesPage() {
   const [search, setSearch] = useState('')
   const [minSurplus, setMinSurplus] = useState('0')
   const [statusFilter, setStatusFilter] = useState('unclaimed')
+  const [showExpired, setShowExpired] = useState(false)
+  const [expiredCount, setExpiredCount] = useState(0)
   const PAGE = 25
 
-  const load = useCallback(async (pg: number, st: string, s: string, ms: string, sf: string) => {
+  const load = useCallback(async (pg: number, st: string, s: string, ms: string, sf: string, se: boolean = false) => {
     setLoading(true)
     const db = supabase
     let q = db.from('overages').select('*', { count: 'exact' })
@@ -36,18 +38,27 @@ export default function OveragesPage() {
     if (sf) q = q.eq('status', sf)
     if (s) q = q.ilike('owner_name', `%${s}%`)
     if (ms && parseInt(ms) > 0) q = q.gte('surplus_amount', parseInt(ms))
+    const today = new Date().toISOString().slice(0, 10)
+    if (!se) q = q.gt('deadline_date', today)
     q = q.order('surplus_amount', { ascending: false })
          .range(pg * PAGE, pg * PAGE + PAGE - 1)
     const { data, count } = await q
     setRows(data || [])
     setTotal(count || 0)
+    // Count expired for toggle badge
+    if (!se) {
+      const { count: ec } = await supabase.from('overages').select('*', { count: 'exact', head: true })
+        .lte('deadline_date', today)
+        .eq('status', sf || 'unclaimed')
+      setExpiredCount(ec || 0)
+    }
     setLoading(false)
   }, [])
 
-  useEffect(() => { load(0, '', '', '0', 'unclaimed') }, [load])
+  useEffect(() => { load(0, '', '', '0', 'unclaimed', false) }, [load])
 
-  function applyFilters() { setPage(0); load(0, state, search, minSurplus, statusFilter) }
-  function goPage(p: number) { setPage(p); load(p, state, search, minSurplus, statusFilter) }
+  function applyFilters() { setPage(0); load(0, state, search, minSurplus, statusFilter, showExpired) }
+  function goPage(p: number) { setPage(p); load(p, state, search, minSurplus, statusFilter, showExpired) }
 
   const totalPages = Math.ceil(total / PAGE)
 
@@ -109,6 +120,18 @@ export default function OveragesPage() {
       {/* Results count */}
       <div style={{ ...m, fontSize: '11px', color: '#666', marginBottom: '12px' }}>
         {total.toLocaleString()} records · sorted by largest surplus
+        {expiredCount > 0 && !showExpired && (
+          <button onClick={() => { setShowExpired(true); load(page, state, search, minSurplus, statusFilter, true) }}
+            style={{ ...m, marginLeft: '16px', background: 'none', border: '1px solid #333', color: '#555', padding: '3px 12px', fontSize: '11px', cursor: 'pointer', textTransform: 'uppercase' as any, letterSpacing: '0.1em' }}>
+            + {expiredCount} expired (hidden)
+          </button>
+        )}
+        {showExpired && (
+          <button onClick={() => { setShowExpired(false); load(page, state, search, minSurplus, statusFilter, false) }}
+            style={{ ...m, marginLeft: '16px', background: 'none', border: '1px solid #f59e0b', color: '#f59e0b', padding: '3px 12px', fontSize: '11px', cursor: 'pointer', textTransform: 'uppercase' as any, letterSpacing: '0.1em' }}>
+            ✓ showing expired
+          </button>
+        )}
       </div>
 
       {/* Table */}
