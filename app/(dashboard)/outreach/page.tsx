@@ -17,15 +17,46 @@ function fmt(n: number) {
 }
 
 function LetterModal({ c, onClose }: { c: any, onClose: () => void }) {
+  const amt = fmt(c.surplus_amount)
+  const county = c.county + ' County, ' + c.state
+  const deadline = c.deadline_date ? new Date(c.deadline_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '[DEADLINE DATE]'
   const parts = [
-    'Dear ' + c.owner_name + ',', '',
-    'I am writing regarding ' + fmt(c.surplus_amount) + ' in unclaimed surplus funds held by ' + c.county + ' County, ' + c.state + '.', '',
-    'These funds came from a tax deed sale on your property' + (c.property_address ? ' at ' + c.property_address : '') + ' and belong to you by law.',
-    'They will be forfeited to the state if not claimed.', '',
-    'I help owners recover these funds at NO upfront cost - fee only on success.', '',
-    'Please reach out at your earliest convenience.', '',
-    'Sincerely,', '[Your Name] | [Phone] | [Email]',
-  ]
+    '[Your Name]',
+    '[Your Address, City, State ZIP]',
+    '[Phone] | [Email]',
+    '',
+    new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+    '',
+    'Re: Unclaimed Funds of ' + amt + ' — ' + c.county + ' County, Georgia',
+    (c.case_number ? 'Case No: ' + c.case_number : ''),
+    '',
+    'Dear ' + c.owner_name + ',',
+    '',
+    'I am writing to inform you that ' + amt + ' is being held in your name by the ' + c.county + ' County Tax Commissioner\u2019s office in Georgia.',
+    '',
+    'These funds resulted from the tax deed sale of your property' + (c.property_address ? ' at ' + c.property_address : '') + '. When the property sold for more than the taxes owed, the difference — ' + amt + ' — became legally yours. The county is required by law to hold this money until you claim it.',
+    '',
+    'YOU HAVE A DEADLINE.',
+    '',
+    'Under Georgia law (O.C.G.A. § 48-4-5), unclaimed surplus funds are transferred to the state after five years. Your deadline to claim these funds is ' + deadline + '. After that date, this money is gone permanently.',
+    '',
+    'WHAT I DO:',
+    '',
+    'I am a surplus fund recovery specialist. I help property owners navigate the county claim process — handling all paperwork, filing requirements, and county correspondence on your behalf. My fee is a percentage of the recovered funds, paid only after you receive your money. There is no cost to you upfront, and no risk.',
+    '',
+    'NEXT STEPS:',
+    '',
+    'Call or text me at [PHONE] or reply to this letter. I will verify your eligibility at no charge and walk you through exactly what happens next. The process typically takes 4-8 weeks once paperwork is filed.',
+    '',
+    'This letter is time-sensitive. Please respond before ' + deadline + '.',
+    '',
+    'Sincerely,',
+    '',
+    '[Your Name]',
+    '[Phone] | [Email]',
+    '',
+    'This is not a government communication. I am a private recovery specialist.',
+  ].filter(l => l !== null && l !== undefined)
   const txt = parts.join('\n')
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
