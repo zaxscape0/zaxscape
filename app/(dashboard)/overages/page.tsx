@@ -129,7 +129,7 @@ export default function OveragesPage() {
       <div style={{ border: '1px solid #1a1a1a', overflowX: 'auto' }}>
         {/* Header */}
         <div style={{ display: 'grid', gridTemplateColumns: '2.5fr 1fr 0.6fr 1fr 1fr 1fr', gap: '0', borderBottom: '1px solid #1a1a1a', padding: '10px 16px', background: '#111' }}>
-          {['Owner','County','State','Surplus','Sale Date','Source'].map(h => (
+          {['Owner','County','State','Surplus','Sale Date','Deadline'].map(h => (
             <div key={h} style={{ ...m, fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.12em' }}>{h}</div>
           ))}
         </div>
@@ -160,7 +160,9 @@ export default function OveragesPage() {
                 {fmt(r.surplus_amount)}
               </div>
               <div style={{ ...m, fontSize: '11px', color: '#666' }}>{r.sale_date?.slice(0,10) || '--'}</div>
-              <div style={{ ...m, fontSize: '11px', color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.source || '--'}</div>
+              <div style={{ ...m, fontSize: '11px', color: expired ? '#ef4444' : urgent ? '#f59e0b' : '#555' }}>
+                {expired ? <span style={{color:'#ef4444'}}>EXPIRED</span> : dl !== null ? <span style={{color: dl < 365 ? '#f59e0b' : '#555'}}>{dl}d left</span> : <span style={{color:'#333'}}>--</span>}
+              </div>
             </div>
           )
         })}
