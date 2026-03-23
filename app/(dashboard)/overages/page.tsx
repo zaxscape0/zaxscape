@@ -75,10 +75,20 @@ export default function OveragesPage() {
     <div style={{ ...m, background: '#0a0a0a', minHeight: '100vh', padding: '32px 24px', color: '#e0e0e0' }}>
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '6px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff', letterSpacing: '-0.5px' }}>Tax Deed Overages</span>
           <span style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.15em' }}>surplus fund tracker</span>
         </div>
+        <button
+          onClick={() => {
+            const params = new URLSearchParams()
+            if (state && state !== 'All') params.set('state', state)
+            if (search) params.set('search', search)
+            if (minSurplus) params.set('min_surplus', minSurplus)
+            window.open('/api/overages/export?' + params.toString(), '_blank')
+          }}
+          style={{ ...m, background: '#1a2a1a', color: '#4ade80', border: '1px solid #2a4a2a', padding: '6px 14px', borderRadius: 4, cursor: 'pointer', fontSize: 11, marginLeft: 'auto' }}
+        >↓ Export CSV</button>
         <p style={{ ...m, fontSize: '12px', color: '#666', margin: 0, maxWidth: '520px' }}>
           When a property sells at tax auction for more than what's owed, the surplus belongs to the former owner. Most never claim it. These are the unclaimed funds.
         </p>
