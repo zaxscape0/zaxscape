@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
 
 const m = { fontFamily: '"IBM Plex Mono", monospace' }
 const STATES = ['All','FL','TX','GA','OH','NC','IL','MA','CA','NY']
@@ -32,28 +31,18 @@ export default function OveragesPage() {
 
   const load = useCallback(async (pg: number, st: string, s: string, ms: string, sf: string, se: boolean = false) => {
     setLoading(true)
-    const db = supabase
-    let q = db.from('overages').select('*', { count: 'exact' })
-    if (st) q = q.eq('state', st)
-    if (sf) q = q.eq('status', sf)
-    if (s) q = q.ilike('owner_name', `%${s}%`)
-    if (ms && parseInt(ms) > 0) q = q.gte('surplus_amount', parseInt(ms))
-    if (!se) {
-      const today = new Date().toISOString().slice(0, 10)
-      q = q.or(`deadline_date.gt.${today},deadline_date.is.null`)
-    }
-    q = q.order('surplus_amount', { ascending: false })
-         .range(pg * PAGE, pg * PAGE + PAGE - 1)
-    const { data, count } = await q
-    setRows(data || [])
-    setTotal(count || 0)
-    // Count expired for toggle badge
-    if (!se) {
-      const { count: ec } = await supabase.from('overages').select('*', { count: 'exact', head: true })
-        .lte('deadline_date', today)
-        .eq('status', sf || 'unclaimed')
-      setExpiredCount(ec || 0)
-    }
+    const params = new URLSearchParams()
+    if (st) params.set('state', st)
+    if (sf) params.set('status', sf)
+    if (s) params.set('search', s)
+    if (ms && parseInt(ms) > 0) params.set('min_surplus', ms)
+    if (se) params.set('show_expired', '1')
+    params.set('page', String(pg))
+    const res = await fetch(`/api/overages?${params}`)
+    const json = await res.json()
+    setRows(json.data || [])
+    setTotal(json.count || 0)
+    setExpiredCount(json.expiredCount || 0)
     setLoading(false)
   }, [])
 
