@@ -110,3 +110,29 @@ create policy "Users view battlecards" on battlecards for select using (
   competitor_id in (select id from competitors where user_id = auth.uid())
 );
 create policy "Service upserts battlecards" on battlecards for all using (true);
+
+-- Outreach contacts table (surplus fund recovery CRM)
+create table if not exists outreach_contacts (
+  id uuid default gen_random_uuid() primary key,
+  overage_id uuid references overages(id) on delete cascade,
+  owner_name text,
+  surplus_amount numeric,
+  county text,
+  state text,
+  property_address text,
+  mailing_address text,
+  phone text,
+  email text,
+  status text default 'new' check (status in ('new','contacted','responded','claimed','dead')),
+  contact_method text check (contact_method in ('mail','phone','email','in_person',null)),
+  notes text,
+  letter_sent_at timestamptz,
+  last_contact_at timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create index if not exists outreach_status_idx on outreach_contacts(status);
+create index if not exists outreach_overage_idx on outreach_contacts(overage_id);
+alter table outreach_contacts enable row level security;
+create policy "Service manages outreach" on outreach_contacts for all using (true);

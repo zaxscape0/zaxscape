@@ -16,6 +16,24 @@ function daysLeft(deadline: string | null) {
   return d
 }
 
+
+async function addToOutreach(r: any) {
+  const res = await fetch('/api/outreach', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      overage_id: r.id,
+      owner_name: r.owner_name,
+      surplus_amount: r.surplus_amount,
+      county: r.county,
+      state: r.state,
+      property_address: r.property_address,
+    })
+  })
+  if (res.ok) alert('Added to outreach pipeline!')
+  else alert('Already in pipeline or error')
+}
+
 export default function OveragesPage() {
   const [rows, setRows] = useState<any[]>([])
   const [total, setTotal] = useState(0)
@@ -128,8 +146,8 @@ export default function OveragesPage() {
       {/* Table */}
       <div style={{ border: '1px solid #1a1a1a', overflowX: 'auto' }}>
         {/* Header */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2.5fr 1fr 0.6fr 1fr 1fr 1fr', gap: '0', borderBottom: '1px solid #1a1a1a', padding: '10px 16px', background: '#111' }}>
-          {['Owner','County','State','Surplus','Sale Date','Deadline'].map(h => (
+        <div style={{ display: 'grid', gridTemplateColumns: '2.5fr 1fr 0.6fr 1fr 1fr 1fr 90px', gap: '0', borderBottom: '1px solid #1a1a1a', padding: '10px 16px', background: '#111' }}>
+          {['Owner','County','State','Surplus','Sale Date','Deadline',''].map(h => (
             <div key={h} style={{ ...m, fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.12em' }}>{h}</div>
           ))}
         </div>
@@ -144,7 +162,7 @@ export default function OveragesPage() {
           const expired = dl !== null && dl <= 0
           return (
             <div key={r.id} style={{
-              display: 'grid', gridTemplateColumns: '2.5fr 1fr 0.6fr 1fr 1fr 1fr',
+              display: 'grid', gridTemplateColumns: '2.5fr 1fr 0.6fr 1fr 1fr 1fr 90px',
               gap: '0', padding: '12px 16px',
               borderBottom: '1px solid #111',
               background: i % 2 === 0 ? '#0a0a0a' : '#0d0d0d',
@@ -162,6 +180,13 @@ export default function OveragesPage() {
               <div style={{ ...m, fontSize: '11px', color: '#666' }}>{r.sale_date?.slice(0,10) || '--'}</div>
               <div style={{ ...m, fontSize: '11px', color: expired ? '#ef4444' : urgent ? '#f59e0b' : '#555' }}>
                 {expired ? <span style={{color:'#ef4444'}}>EXPIRED</span> : dl !== null ? <span style={{color: dl < 365 ? '#f59e0b' : '#555'}}>{dl}d left</span> : <span style={{color:'#333'}}>--</span>}
+              </div>
+              <div>
+                <button
+                  onClick={() => addToOutreach(r)}
+                  title="Add to outreach pipeline"
+                  style={{ ...m, background: '#1a2a1a', color: '#4ade80', border: '1px solid #2a4a2a', padding: '3px 8px', borderRadius: 4, cursor: 'pointer', fontSize: 11 }}
+                >+ Pipeline</button>
               </div>
             </div>
           )

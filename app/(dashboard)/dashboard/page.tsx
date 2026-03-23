@@ -74,6 +74,7 @@ export default function DashboardPage() {
             <div style={{ display:"flex",gap:"20px",alignItems:"center" }}>
               <Link href="/dashboard" style={{ fontFamily:'IBM Plex Mono, monospace',fontSize:"12px",color:"#888",textDecoration:"none" }}>Properties</Link>
               <Link href="/overages" style={{ fontFamily:'IBM Plex Mono, monospace',fontSize:"12px",color:"#888",textDecoration:"none" }}>Overages</Link>
+              <Link href="/outreach" style={{ fontFamily:'IBM Plex Mono, monospace',fontSize:"12px",color:"#888",textDecoration:"none" }}>Outreach</Link>
             </div>
           <div style={{ display:"flex",alignItems:"center",gap:"24px" }}>
             <span style={{ ...m,fontSize: "13px",color:"#666",textTransform:"uppercase" }}>{(profile?.property_type || "commercial")} · Boston MA</span>
