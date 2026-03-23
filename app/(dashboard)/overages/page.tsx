@@ -128,8 +128,8 @@ export default function OveragesPage() {
       {/* Table */}
       <div style={{ border: '1px solid #1a1a1a', overflowX: 'auto' }}>
         {/* Header */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr 1fr 1fr 1fr', gap: '0', borderBottom: '1px solid #1a1a1a', padding: '10px 16px', background: '#111' }}>
-          {['Owner','Property','County','State','Surplus','Sale Date','Deadline'].map(h => (
+        <div style={{ display: 'grid', gridTemplateColumns: '2.5fr 1fr 0.6fr 1fr 1fr 1fr', gap: '0', borderBottom: '1px solid #1a1a1a', padding: '10px 16px', background: '#111' }}>
+          {['Owner','County','State','Surplus','Sale Date','Source'].map(h => (
             <div key={h} style={{ ...m, fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.12em' }}>{h}</div>
           ))}
         </div>
@@ -144,16 +144,15 @@ export default function OveragesPage() {
           const expired = dl !== null && dl <= 0
           return (
             <div key={r.id} style={{
-              display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr 1fr 1fr 1fr',
+              display: 'grid', gridTemplateColumns: '2.5fr 1fr 0.6fr 1fr 1fr 1fr',
               gap: '0', padding: '12px 16px',
               borderBottom: '1px solid #111',
               background: i % 2 === 0 ? '#0a0a0a' : '#0d0d0d',
               alignItems: 'center'
             }}>
-              <div style={{ ...m, fontSize: '13px', color: '#ccc' }}>{r.owner_name}</div>
               <div>
-                <div style={{ ...m, fontSize: '12px', color: '#aaa' }}>{r.property_address}</div>
-                <div style={{ ...m, fontSize: '11px', color: '#555' }}>{r.city}</div>
+                <div style={{ ...m, fontSize: '13px', color: '#ccc' }}>{r.owner_name}</div>
+                {r.property_address && <div style={{ ...m, fontSize: '11px', color: '#555' }}>{r.property_address}{r.city ? `, ${r.city}` : ''}</div>}
               </div>
               <div style={{ ...m, fontSize: '12px', color: '#777' }}>{r.county}</div>
               <div style={{ ...m, fontSize: '12px', color: '#777' }}>{r.state}</div>
@@ -161,9 +160,7 @@ export default function OveragesPage() {
                 {fmt(r.surplus_amount)}
               </div>
               <div style={{ ...m, fontSize: '11px', color: '#666' }}>{r.sale_date?.slice(0,10) || '--'}</div>
-              <div style={{ ...m, fontSize: '11px', color: expired ? '#ef4444' : urgent ? '#f59e0b' : '#666' }}>
-                {expired ? 'EXPIRED' : dl !== null ? `${dl}d left` : '--'}
-              </div>
+              <div style={{ ...m, fontSize: '11px', color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.source || '--'}</div>
             </div>
           )
         })}
