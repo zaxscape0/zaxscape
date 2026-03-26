@@ -14,6 +14,7 @@ async function stripeRequest(path: string, body: Record<string, string>) {
 }
 
 const PRICE_IDS: Record<string, string> = {
+  agent:    process.env.STRIPE_PRICE_AGENT    || '',
   access:   process.env.STRIPE_PRICE_ACCESS   || '',
   monthly:  process.env.STRIPE_PRICE_MONTHLY  || '',
   yearly:   process.env.STRIPE_PRICE_YEARLY   || '',
@@ -43,8 +44,8 @@ export async function POST(req: NextRequest) {
     }
 
     if (!isLifetime) {
-      if (planKey === 'access') {
-        body['subscription_data[trial_period_days]'] = '14'
+      if (planKey === 'access' || planKey === 'agent') {
+        body['subscription_data[trial_period_days]'] = '7'
         body['subscription_data[trial_settings][end_behavior][missing_payment_method]'] = 'cancel'
       }
       body['payment_method_collection'] = 'always'

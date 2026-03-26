@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase'
 
+async function getIsPaid(req: NextRequest): Promise<boolean> {
+  // Check auth cookie / bearer token
+  const authHeader = req.headers.get('authorization') || ''
+  const token = authHeader.replace('Bearer ', '')
+  if (!token) return false
+  try {
+    const db = createServerSupabase()
+    const { data: { user } } = await db.auth.getUser(token)
+    if (!user) return false
+    const { data: profile } = await db.from('profiles').select('plan_active').eq('id', user.id).single()
+    return profile?.plan_active === true
+  } catch {
+    return false
+  }
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const state = searchParams.get('state') || ''
@@ -10,6 +26,8 @@ export async function GET(req: NextRequest) {
   const showExpired = searchParams.get('show_expired') === '1'
   const page = parseInt(searchParams.get('page') || '0')
   const PAGE = 25
+
+  const isPaid = await getIsPaid(req)
 
   const supabase = createServerSupabase()
   let q = supabase.from('overages').select('*', { count: 'exact' })
@@ -28,10 +46,15 @@ export async function GET(req: NextRequest) {
        .range(page * PAGE, page * PAGE + PAGE - 1)
 
   const { data, count, error } = await q
-
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Get expired count
+  // Blur owner names for free users
+  const rows = (data || []).map(r => ({
+    ...r,
+    owner_name: isPaid ? r.owner_name : '●●●●● ●●●●●●●',
+    property_address: isPaid ? r.property_address : (r.property_address ? '●●●● ●●●●●● ●●' : ''),
+  }))
+
   const today2 = new Date().toISOString().slice(0, 10)
   const { count: expiredCount } = await supabase
     .from('overages')
@@ -39,5 +62,5 @@ export async function GET(req: NextRequest) {
     .lte('deadline_date', today2)
     .eq('status', status || 'unclaimed')
 
-  return NextResponse.json({ data, count, expiredCount: expiredCount || 0 })
+  return NextResponse.json({ data: rows, count, expiredCount: expiredCount || 0, isPaid })
 }

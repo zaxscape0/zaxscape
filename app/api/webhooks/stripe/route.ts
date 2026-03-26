@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const email = session.customer_email
     const plan = session.metadata?.plan || 'access'
     const propertyType = session.metadata?.propertyType || 'commercial'
-    const unlimited = ['monthly', 'yearly', 'lifetime'].includes(plan)
+    const unlimited = ['monthly', 'yearly', 'lifetime', 'agent'].includes(plan)
 
     if (email) {
       await db.from('profiles').update({

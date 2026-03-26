@@ -45,6 +45,7 @@ export default function OveragesPage() {
   const [statusFilter, setStatusFilter] = useState('unclaimed')
   const [showExpired, setShowExpired] = useState(false)
   const [expiredCount, setExpiredCount] = useState(0)
+  const [isPaid, setIsPaid] = useState(false)
   const PAGE = 25
 
   const load = useCallback(async (pg: number, st: string, s: string, ms: string, sf: string, se: boolean = false) => {
@@ -56,11 +57,16 @@ export default function OveragesPage() {
     if (ms && parseInt(ms) > 0) params.set('min_surplus', ms)
     if (se) params.set('show_expired', '1')
     params.set('page', String(pg))
-    const res = await fetch(`/api/overages?${params}`)
+    // Pass auth token so API can check plan
+    const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession()
+    const headers: Record<string,string> = {}
+    if (session?.access_token) headers['Authorization'] = 'Bearer ' + session.access_token
+    const res = await fetch(`/api/overages?${params}`, { headers })
     const json = await res.json()
     setRows(json.data || [])
     setTotal(json.count || 0)
     setExpiredCount(json.expiredCount || 0)
+    setIsPaid(json.isPaid || false)
     setLoading(false)
   }, [])
 
@@ -80,7 +86,8 @@ export default function OveragesPage() {
           <span style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.15em' }}>surplus fund tracker</span>
         </div>
         <button
-          onClick={() => {
+          onClick={async () => {
+            if (!isPaid) { window.location.href = '/upgrade'; return }
             const params = new URLSearchParams()
             if (state && state !== 'All') params.set('state', state)
             if (search) params.set('search', search)
@@ -109,6 +116,16 @@ export default function OveragesPage() {
         ))}
       </div>
 
+      {/* Upgrade banner for free users */}
+      {!isPaid && (
+        <div style={{ background: '#0a1a0a', border: '1px solid #2a4a2a', borderRadius: 6, padding: '14px 20px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <span style={{ ...m, fontSize: 13, color: '#4ade80', fontWeight: 700 }}>🔒 Owner names are hidden on the free plan</span>
+            <span style={{ ...m, fontSize: 12, color: '#666', marginLeft: 12 }}>Upgrade to see all names, addresses, and export CSV</span>
+          </div>
+          <a href="/upgrade" style={{ ...m, background: '#4ade80', color: '#000', padding: '8px 20px', borderRadius: 4, textDecoration: 'none', fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>Upgrade — $49/mo →</a>
+        </div>
+      )}
       {/* Filters */}
       <div style={{ border: '1px solid #1a1a1a', padding: '20px 16px', marginBottom: '24px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: '12px', alignItems: 'end' }}>
         <div>
@@ -179,7 +196,10 @@ export default function OveragesPage() {
               alignItems: 'center'
             }}>
               <div>
-                <div style={{ ...m, fontSize: '13px', color: '#ccc' }}>{r.owner_name}</div>
+                <div style={{ ...m, fontSize: '13px', color: isPaid ? '#ccc' : '#555' }}>
+                  {r.owner_name}
+                  {!isPaid && <span style={{ ...m, fontSize: '10px', color: '#f59e0b', marginLeft: 8 }}>🔒 upgrade to unlock</span>}
+                </div>
                 {r.property_address && <div style={{ ...m, fontSize: '11px', color: '#555' }}>{r.property_address}{r.city ? `, ${r.city}` : ''}</div>}
               </div>
               <div style={{ ...m, fontSize: '12px', color: '#777' }}>{r.county}</div>
