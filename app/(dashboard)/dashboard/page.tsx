@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(0)
   const [unlimited, setUnlimited] = useState(false)
+  const [selectedCity, setSelectedCity] = useState("Boston")
   const router = useRouter()
   const PAGE = 25
   const FREE_LIMIT = 20
@@ -36,6 +37,7 @@ export default function DashboardPage() {
       .order("assessed_value", { ascending: false })
       .range(pg * PAGE, unlimited ? (pg + 1) * PAGE - 1 : FREE_LIMIT - 1)
     if (ptype && ptype !== "both") q = q.eq("property_type", ptype)
+    q = q.eq("city", selectedCity)
     if (c) q = q.eq("city", c)
     if (z) q = q.eq("zip", z)
     if (parseInt(ms) > 0) q = q.gte("motivation_score", parseInt(ms))
@@ -77,7 +79,7 @@ export default function DashboardPage() {
               <Link href="/outreach" style={{ fontFamily:'IBM Plex Mono, monospace',fontSize:"12px",color:"#888",textDecoration:"none" }}>Outreach</Link>
             </div>
           <div style={{ display:"flex",alignItems:"center",gap:"24px" }}>
-            <span style={{ ...m,fontSize: "13px",color:"#666",textTransform:"uppercase" }}>{(profile?.property_type || "commercial")} · Boston MA</span>
+            <span style={{ ...m,fontSize: "13px",color:"#666",textTransform:"uppercase" }}>{(profile?.property_type || "commercial")} · {profile?.city === "Atlanta" ? "Atlanta GA" : "Boston MA"}</span>
             <button onClick={async () => { await supabase.auth.signOut(); router.push("/login") }}
               style={{ ...m,fontSize: "13px",textTransform:"uppercase",color:"#555",background:"none",border:"none",cursor:"pointer" }}>Sign out</button>
           </div>
@@ -97,6 +99,11 @@ export default function DashboardPage() {
             <option value="Cambridge">Cambridge</option>
             <option value="Worcester">Worcester</option>
             <option value="Springfield">Springfield</option>
+            {selectedCity === "Atlanta" && <>
+              <option value="Alpharetta">Alpharetta</option>
+              <option value="Roswell">Roswell</option>
+              <option value="Sandy Springs">Sandy Springs</option>
+            </>}
           </select></div>
           {([["Search owner", search, setSearch, "Owner name..."],["ZIP code", zip, setZip, "02101"],["Min value ($)", minValue, setMinValue, "200000"]] as any[]).map(([lbl,val,set,ph]: any) => (
             <div key={lbl}><label style={{ ...m,fontSize: "12px",textTransform:"uppercase",letterSpacing:"0.15em",color:"#555",display:"block",marginBottom:"8px" }}>{lbl}</label>
