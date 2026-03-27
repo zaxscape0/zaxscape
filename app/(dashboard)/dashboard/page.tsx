@@ -79,12 +79,12 @@ export default function DashboardPage() {
               <Link href="/outreach" style={{ fontFamily:'IBM Plex Mono, monospace',fontSize:"12px",color:"#888",textDecoration:"none" }}>Outreach</Link>
             </div>
           <div style={{ display:"flex",alignItems:"center",gap:"24px" }}>
-            <div style={{ display:"flex", gap:"8px", alignItems:"center" }}>
-            <span style={{ ...m, fontSize:"12px", color:"#444", textTransform:"uppercase" }}>{profile?.property_type || "commercial"}</span>
-            <span style={{ ...m, fontSize:"12px", color:"#333" }}>·</span>
-            <button onClick={() => { setSelectedCity("Boston"); setPage(0); load(profile?.property_type||"commercial",0,"","","0","","") }} style={{ ...m, fontSize:"12px", textTransform:"uppercase", background:"none", border:"none", cursor:"pointer", color: selectedCity==="Boston" ? "#4ade80" : "#555", padding:0 }}>Boston</button>
-            <span style={{ ...m, fontSize:"12px", color:"#333" }}>|</span>
-            <button onClick={() => { setSelectedCity("Atlanta"); setPage(0); load(profile?.property_type||"commercial",0,"","","0","","") }} style={{ ...m, fontSize:"12px", textTransform:"uppercase", background:"none", border:"none", cursor:"pointer", color: selectedCity==="Atlanta" ? "#4ade80" : "#555", padding:0 }}>Atlanta</button>
+            <div style={{ display:"flex", gap:"8px", alignItems:"center", flexWrap:"wrap" }}>
+            <span style={{ ...m, fontSize:"12px", color:"#444", textTransform:"uppercase" }}>{profile?.property_type || "commercial"} ·</span>
+            {["Boston","Atlanta","Norcross","Dunwoody"].map(c => (
+              <button key={c} onClick={() => { setSelectedCity(c); setPage(0); load(profile?.property_type||"commercial",0,"","","0","","") }}
+                style={{ ...m, fontSize:"12px", textTransform:"uppercase", background:"none", border:"none", cursor:"pointer", color: selectedCity===c ? "#4ade80" : "#555", padding:0 }}>{c}</button>
+            ))}
           </div>
             <button onClick={async () => { await supabase.auth.signOut(); router.push("/login") }}
               style={{ ...m,fontSize: "13px",textTransform:"uppercase",color:"#555",background:"none",border:"none",cursor:"pointer" }}>Sign out</button>
