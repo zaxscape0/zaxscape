@@ -14,7 +14,7 @@ async function stripeRequest(path: string, body: Record<string, string>) {
 }
 
 const PRICE_IDS: Record<string, string> = {
-  agent:    process.env.STRIPE_PRICE_AGENT    || '',
+  agent:    process.env.STRIPE_PRICE_AGENT    || 'price_1TFNukH13TBMWbWrMVvxc8Ht',
   access:   process.env.STRIPE_PRICE_ACCESS   || '',
   monthly:  process.env.STRIPE_PRICE_MONTHLY  || '',
   yearly:   process.env.STRIPE_PRICE_YEARLY   || '',
