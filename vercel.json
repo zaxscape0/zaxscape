@@ -3,20 +3,17 @@
     {
       "path": "/api/cron/scan",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/scrape-ga",
+      "schedule": "0 6 * * *"
     }
   ],
   "functions": {
-    "app/api/jobs/route.ts": {
-      "maxDuration": 60
-    },
-    "app/api/monitor/run/route.ts": {
-      "maxDuration": 60
-    },
-    "app/api/battlecard/route.ts": {
-      "maxDuration": 60
-    },
-    "app/api/reviews/route.ts": {
-      "maxDuration": 60
-    }
+    "app/api/jobs/route.ts": { "maxDuration": 60 },
+    "app/api/monitor/run/route.ts": { "maxDuration": 60 },
+    "app/api/battlecard/route.ts": { "maxDuration": 60 },
+    "app/api/reviews/route.ts": { "maxDuration": 60 },
+    "app/api/cron/scrape-ga/route.ts": { "maxDuration": 300 }
   }
 }
