@@ -26,6 +26,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Search,
+  Swords,
 } from "lucide-react";
 
 const navItems = [
@@ -37,6 +38,7 @@ const navItems = [
   { name: "Businesses", icon: Store, href: "/businesses", shortcut: "6" },
   { name: "Real Estate", icon: Home, href: "/real-estate", shortcut: "7" },
   { name: "House Search", icon: Search, href: "/house-search" },
+  { name: "War Room", icon: Swords, href: "/war-room" },
   { name: "Deal Analyzer", icon: Calculator, href: "/deals", shortcut: "8" },
   { name: "Map", icon: Map, href: "/map", shortcut: "9" },
   { divider: true } as const,
@@ -64,13 +66,10 @@ export function Sidebar() {
     >
       {/* Logo */}
       <div className="flex h-10 items-center border-b px-3">
-        {!collapsed && (
-          <span className="text-sm font-bold tracking-tight text-foreground">
-            ZAX<span className="text-primary">SCAPE</span>
-          </span>
-        )}
-        {collapsed && (
-          <span className="text-sm font-bold text-primary">Z</span>
+        {!collapsed ? (
+          <img src="/logo.jpg" alt="ZaxScape" className="h-7 invert" />
+        ) : (
+          <img src="/logo.jpg" alt="ZaxScape" className="h-6 invert" />
         )}
       </div>
 

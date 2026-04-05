@@ -45,12 +45,8 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
       {/* Logo */}
-      <div className="mb-12 select-none">
-        <h1 className="text-6xl font-bold tracking-tight font-mono">
-          <span className="text-foreground">ZAX</span>
-          <span className="text-primary">SCAPE</span>
-        </h1>
-        <div className="mt-1.5 h-[2px] w-full bg-gradient-to-r from-transparent via-primary to-transparent" />
+      <div className="mb-12 select-none flex flex-col items-center">
+        <img src="/logo.jpg" alt="ZaxScape" className="h-32 invert" />
       </div>
 
       {/* Login Form */}
