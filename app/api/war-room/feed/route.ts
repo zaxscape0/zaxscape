@@ -83,25 +83,56 @@ async function fetchFromSyndication(): Promise<Headline[]> {
   return headlines;
 }
 
+async function fetchFromReutersFTBloomberg(): Promise<Headline[]> {
+  const feeds = [
+    { url: "https://news.google.com/rss/search?q=site:reuters.com+geopolitics+OR+war+OR+military+OR+sanctions&hl=en-US&gl=US&ceid=US:en", source: "Reuters" },
+    { url: "https://news.google.com/rss/search?q=site:ft.com+geopolitics+OR+war+OR+military+OR+sanctions&hl=en-US&gl=US&ceid=US:en", source: "Financial Times" },
+    { url: "https://news.google.com/rss/search?q=site:bloomberg.com+geopolitics+OR+war+OR+military+OR+sanctions&hl=en-US&gl=US&ceid=US:en", source: "Bloomberg" },
+    { url: "https://feeds.reuters.com/Reuters/worldNews", source: "Reuters" },
+    { url: "https://www.ft.com/rss/home/us", source: "Financial Times" },
+  ];
+  
+  const allHeadlines: Headline[] = [];
+  
+  for (const feed of feeds) {
+    try {
+      const res = await fetch(feed.url, {
+        headers: { "User-Agent": "ZaxScape/1.0" },
+        signal: AbortSignal.timeout(6000),
+      });
+      if (!res.ok) continue;
+      const xml = await res.text();
+      const parsed = parseRSS(xml, feed.source);
+      // Override source to show actual outlet
+      for (const h of parsed) {
+        h.source = feed.source;
+      }
+      allHeadlines.push(...parsed);
+    } catch {
+      continue;
+    }
+  }
+  
+  // Sort by timestamp descending, deduplicate by text similarity
+  allHeadlines.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  
+  // Simple dedup — skip if first 50 chars match
+  const seen = new Set<string>();
+  const deduped = allHeadlines.filter(h => {
+    const key = h.text.substring(0, 50).toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  
+  if (deduped.length === 0) throw new Error("No headlines from Reuters/FT/Bloomberg");
+  return deduped.slice(0, 50);
+}
+
 async function fetchFallbackNews(): Promise<Headline[]> {
-  // Use GNews free tier as fallback
   try {
-    const res = await fetch(
-      "https://gnews.io/api/v4/search?q=geopolitics+OR+military+OR+sanctions+OR+war&lang=en&max=30&apikey=demo",
-      { signal: AbortSignal.timeout(8000) }
-    );
-    if (!res.ok) throw new Error(`GNews ${res.status}`);
-    const data = await res.json();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (data.articles || []).map((a: any, i: number) => ({
-      id: `gnews-${i}-${Date.now()}`,
-      text: a.title || "",
-      timestamp: a.publishedAt || new Date().toISOString(),
-      url: a.url || "#",
-      source: "GNews (fallback)",
-    }));
+    return await fetchFromReutersFTBloomberg();
   } catch {
-    // Return mock data as absolute fallback so the UI isn't empty
     return generateMockHeadlines();
   }
 }
@@ -130,7 +161,7 @@ function generateMockHeadlines(): Headline[] {
     text,
     timestamp: new Date(now - i * 180_000).toISOString(), // 3 min apart
     url: "#",
-    source: "@DeItaone (simulated)",
+    source: "Simulated",
   }));
 }
 
@@ -180,6 +211,7 @@ export async function GET() {
     { name: "RSSHub", fn: fetchFromRSSHub },
     { name: "Nitter", fn: fetchFromNitter },
     { name: "Syndication", fn: fetchFromSyndication },
+    { name: "Reuters/FT/Bloomberg", fn: fetchFromReutersFTBloomberg },
     { name: "Fallback", fn: fetchFallbackNews },
   ];
 
