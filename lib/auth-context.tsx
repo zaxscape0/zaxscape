@@ -1,60 +1,56 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { User, Session } from "@supabase/supabase-js";
-import { createBrowserClient } from "@/lib/supabase";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: { username: string } | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (username: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  session: null,
   loading: true,
   signIn: async () => ({ error: null }),
   signOut: async () => {},
 });
 
+const VALID_USERNAME = "Zack";
+const VALID_PASSWORD = "@LunaTuna$";
+const STORAGE_KEY = "zs_auth";
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<{ username: string } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [supabase] = useState(() => createBrowserClient());
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const stored = typeof window !== "undefined" ? sessionStorage.getItem(STORAGE_KEY) : null;
+    if (stored) {
+      try {
+        setUser(JSON.parse(stored));
+      } catch {}
+    }
+    setLoading(false);
+  }, []);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, [supabase]);
-
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null };
+  const signIn = async (username: string, password: string) => {
+    if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+      const u = { username };
+      setUser(u);
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+      return { error: null };
+    }
+    return { error: "Invalid credentials" };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    setUser(null);
+    sessionStorage.removeItem(STORAGE_KEY);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
