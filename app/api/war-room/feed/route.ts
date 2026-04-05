@@ -92,6 +92,7 @@ async function fetchFallbackNews(): Promise<Headline[]> {
     );
     if (!res.ok) throw new Error(`GNews ${res.status}`);
     const data = await res.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data.articles || []).map((a: any, i: number) => ({
       id: `gnews-${i}-${Date.now()}`,
       text: a.title || "",

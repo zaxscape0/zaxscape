@@ -67,9 +67,15 @@ const config: Config = {
           from: { opacity: "0" },
           to: { opacity: "1" },
         },
+        flash: {
+          "0%": { backgroundColor: "rgba(239, 68, 68, 0.15)" },
+          "50%": { backgroundColor: "rgba(239, 68, 68, 0.05)" },
+          "100%": { backgroundColor: "transparent" },
+        },
       },
       animation: {
         "fade-in": "fade-in 150ms ease-in",
+        flash: "flash 2s ease-out",
       },
     },
   },

@@ -54,11 +54,13 @@ function normalizeResponse(data: Record<string, unknown>): SkipTraceResult {
   let mailingAddress: string | null = null;
 
   // BatchData nests results under results.persons[] or results[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const d = data as any;
   const results =
-    (data as any)?.results?.persons ||
-    (data as any)?.results?.results ||
-    (data as any)?.results ||
-    (data as any)?.persons ||
+    d?.results?.persons ||
+    d?.results?.results ||
+    d?.results ||
+    d?.persons ||
     [];
 
   const personList = Array.isArray(results) ? results : [results];
