@@ -1,26 +1,27 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+import { ThemeProvider } from "@/components/layout/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Sidebar } from "@/components/layout/sidebar";
+import { TopBar } from "@/components/layout/topbar";
+import { CommandPalette } from "@/components/layout/command-palette";
 
-const geistSans = Geist({
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  weight: "100 900",
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: "100 900",
 });
 
 export const metadata: Metadata = {
-  title: "ZaxScape — Competitor Intelligence, Automated",
-  description: "Monitor your competitors 24/7. Get instant alerts when they change pricing, launch features, or shift strategy.",
-  openGraph: {
-    title: "ZaxScape — Competitor Intelligence, Automated",
-    description: "Monitor your competitors 24/7. Get instant alerts the moment they make a move.",
-    url: "https://app.zaxscape.com",
-    siteName: "ZaxScape",
-  },
+  title: "ZaxScape — Financial Command Center",
+  description: "Personal financial command center & local market intelligence",
 };
 
 export default function RootLayout({
@@ -29,9 +30,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <TooltipProvider>
+            <div className="flex h-screen overflow-hidden">
+              <Sidebar />
+              <div className="flex flex-1 flex-col overflow-hidden">
+                <TopBar />
+                <main className="flex-1 overflow-y-auto p-3">
+                  {children}
+                </main>
+              </div>
+            </div>
+            <CommandPalette />
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,119 +1,103 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #000000;
-  --foreground: #ffffff;
-}
-
-body {
-  background: #000;
-  color: #fff;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Monospace utility */
-.mono {
-  font-family: 'Courier New', Courier, monospace;
-}
-
-/* Zax button styles */
-.zax-btn {
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 12px 24px;
-  display: inline-block;
-  text-decoration: none;
-  cursor: pointer;
-  border: none;
-  transition: background 0.15s, color 0.15s;
-}
-.zax-btn-primary {
-  background: #fff;
-  color: #000;
-  font-weight: 700;
-}
-.zax-btn-primary:hover { background: #e0e0e0; }
-.zax-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-.zax-btn-secondary {
-  background: transparent;
-  color: #fff;
-  border: 1px solid #444;
-}
-.zax-btn-secondary:hover { border-color: #fff; }
-
-/* Zax input */
-.zax-input {
-  width: 100%;
-  background: #0a0a0a;
-  border: 1px solid #333;
-  color: #fff;
-  padding: 12px 16px;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  outline: none;
-  transition: border-color 0.15s;
-}
-.zax-input::placeholder { color: #444; }
-.zax-input:focus { border-color: #fff; }
-
-/* Label */
-.zax-label {
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #666;
-  display: block;
-  margin-bottom: 8px;
-}
-
-/* ── Mobile responsive ─────────────────────────────────────────── */
-* { box-sizing: border-box; }
-
-@media (max-width: 768px) {
-  /* Nav */
-  nav { padding: 0 16px !important; }
-  nav img { height: 40px !important; }
-
-  /* Main content padding */
-  main { padding: 24px 16px !important; }
-
-  /* Hero headings */
-  h1 { font-size: 28px !important; }
-  h2 { font-size: 24px !important; }
-
-  /* Stat grid → single column */
-  .stats-grid { grid-template-columns: 1fr !important; }
-
-  /* Feature grid → single column */
-  .feature-grid { grid-template-columns: 1fr !important; }
-}
-
-/* Property table — hide on mobile, use card layout instead */
-@media (max-width: 700px) {
-  .prop-table-header { display: none !important; }
-  .prop-table-row {
-    grid-template-columns: 1fr !important;
-    gap: 4px !important;
-    padding: 16px !important;
-    border-bottom: 1px solid #111 !important;
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 4%;
+    --card: 0 0% 98%;
+    --card-foreground: 240 10% 4%;
+    --popover: 0 0% 98%;
+    --popover-foreground: 240 10% 4%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 92%;
+    --secondary-foreground: 240 6% 10%;
+    --muted: 240 5% 92%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 240 5% 92%;
+    --accent-foreground: 240 6% 10%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 221 83% 53%;
+    --radius: 0.375rem;
+    --up: 142 71% 45%;
+    --down: 0 84% 60%;
+    --warning: 38 92% 50%;
+    --link: 221 83% 53%;
   }
-  .prop-table-row > div { align-self: auto !important; }
-  .prop-col-owner::before { content: "Owner: "; color: #555; font-size: 11px; }
-  .prop-col-value::before { content: "Value: "; color: #555; font-size: 11px; }
-  .prop-col-year::before { content: "Year: "; color: #555; font-size: 11px; }
-  .prop-col-zip::before { content: "ZIP: "; color: #555; font-size: 11px; }
 
-  /* Filter grid → 2 cols on mobile */
-  .filter-grid { grid-template-columns: 1fr 1fr !important; }
-  .filter-grid > :last-child { grid-column: 1 / -1; }
+  .dark {
+    --background: 240 17% 4%;
+    --foreground: 0 0% 90%;
+    --card: 240 14% 7%;
+    --card-foreground: 0 0% 90%;
+    --popover: 240 14% 7%;
+    --popover-foreground: 0 0% 90%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 10% 12%;
+    --secondary-foreground: 0 0% 90%;
+    --muted: 240 10% 12%;
+    --muted-foreground: 240 5% 50%;
+    --accent: 240 10% 14%;
+    --accent-foreground: 0 0% 90%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 10% 14%;
+    --input: 240 10% 14%;
+    --ring: 221 83% 53%;
+    --up: 142 71% 45%;
+    --down: 0 84% 60%;
+    --warning: 38 92% 50%;
+    --link: 217 91% 60%;
+  }
+}
 
-  /* Signup options */
-  .signup-options { flex-direction: column !important; }
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  /* Tabular figures for numbers */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
 
-  /* Property detail grid */
-  .detail-grid { grid-template-columns: 1fr !important; }
+/* Scrollbar styling for dark mode */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(240 10% 20%);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(240 10% 30%);
+}
+
+/* Command palette overlay */
+[cmdk-overlay] {
+  background: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+[cmdk-dialog] {
+  z-index: 50;
 }
