@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
+// Using default nodejs runtime for reliable fetch
 export const revalidate = 60;
 
 interface Headline {
