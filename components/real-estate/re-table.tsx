@@ -1,18 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
-  getFilteredRowModel,
   flexRender,
   type ColumnDef,
-  type SortingState,
 } from "@tanstack/react-table";
 import { REListing, getCapRate, getNoi, isEstimatedCapRate, isEstimatedNoi, propertyTypeLabels } from "@/lib/re-data";
 import { formatCurrency, formatCompact } from "@/lib/format";
-import { Badge } from "@/components/ui/badge";
 import { REFilterState } from "./re-filters";
 import { Eye, Calculator, Bookmark } from "lucide-react";
 
@@ -21,17 +18,6 @@ function capRateColor(rate: number | null): string {
   if (rate > 8) return "text-up";
   if (rate >= 6) return "text-warning";
   return "text-down";
-}
-
-function statusBadge(status: string) {
-  const map: Record<string, { label: string; cls: string }> = {
-    active: { label: "Active", cls: "bg-up/10 text-up" },
-    under_contract: { label: "Under Contract", cls: "bg-warning/10 text-warning" },
-    sold: { label: "Sold", cls: "bg-down/10 text-down" },
-    off_market: { label: "Off Market", cls: "bg-muted text-muted-foreground" },
-  };
-  const s = map[status] ?? map.active;
-  return <span className={`inline-flex rounded px-1.5 py-0.5 text-xxs font-medium ${s.cls}`}>{s.label}</span>;
 }
 
 function EstBadge() {
@@ -197,7 +183,7 @@ const columns: ColumnDef<REListing, unknown>[] = [
     id: "actions",
     header: "",
     size: 80,
-    cell: ({ row }) => (
+    cell: () => (
       <div className="flex items-center gap-1">
         <button className="rounded p-1 hover:bg-accent" title="View">
           <Eye className="h-3 w-3 text-muted-foreground" />
@@ -220,9 +206,6 @@ interface Props {
 }
 
 export function RETable({ data, filters, onSelect }: Props) {
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "capRate", desc: true },
-  ]);
 
   const filtered = useMemo(() => {
     let items = [...data];
@@ -288,7 +271,7 @@ export function RETable({ data, filters, onSelect }: Props) {
     data: filtered,
     columns,
     state: { sorting: effectiveSorting },
-    onSortingChange: setSorting,
+    onSortingChange: () => {},
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });

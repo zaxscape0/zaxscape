@@ -130,11 +130,8 @@ async function fetchFromReutersFTBloomberg(): Promise<Headline[]> {
 }
 
 async function fetchFallbackNews(): Promise<Headline[]> {
-  try {
-    return await fetchFromReutersFTBloomberg();
-  } catch {
-    return generateMockHeadlines();
-  }
+  return [];
+}
 }
 
 function generateMockHeadlines(): Headline[] {
@@ -212,7 +209,7 @@ export async function GET() {
     { name: "Nitter", fn: fetchFromNitter },
     { name: "Syndication", fn: fetchFromSyndication },
     { name: "Reuters/FT/Bloomberg", fn: fetchFromReutersFTBloomberg },
-    { name: "Fallback", fn: fetchFallbackNews },
+    
   ];
 
   let headlines: Headline[] = [];
@@ -232,10 +229,7 @@ export async function GET() {
   }
 
   // If still empty, use mock
-  if (headlines.length === 0) {
-    headlines = generateMockHeadlines();
-    usedSource = "Mock";
-  }
+  // No fallback to mock — show empty state if all sources fail
 
   cachedData = { headlines, fetchedAt: Date.now() };
 
