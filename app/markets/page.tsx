@@ -52,8 +52,18 @@ export default function MarketsPage() {
         <IndexOverview data={data} loading={loading} />
       </section>
 
+      {/* Stock Detail Panel — Full Width when open */}
+      {selectedQuote && !selectedQuote.error && (
+        <section>
+          <StockDetail
+            quote={selectedQuote}
+            onClose={() => setSelectedSymbol(null)}
+          />
+        </section>
+      )}
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {/* Main: Watchlist + Detail */}
+        {/* Main: Watchlist */}
         <div className="space-y-4 lg:col-span-2">
           <section>
             <h2 className="mb-2 text-xxs font-medium uppercase tracking-wider text-muted-foreground">
@@ -66,16 +76,6 @@ export default function MarketsPage() {
               selectedSymbol={selectedSymbol}
             />
           </section>
-
-          {/* Stock Detail Panel */}
-          {selectedQuote && !selectedQuote.error && (
-            <section>
-              <StockDetail
-                quote={selectedQuote}
-                onClose={() => setSelectedSymbol(null)}
-              />
-            </section>
-          )}
         </div>
 
         {/* Sidebar: Economic Indicators */}
