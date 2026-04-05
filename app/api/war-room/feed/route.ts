@@ -129,39 +129,6 @@ async function fetchFromReutersFTBloomberg(): Promise<Headline[]> {
   return deduped.slice(0, 50);
 }
 
-async function fetchFallbackNews(): Promise<Headline[]> {
-  return [];
-}
-}
-
-function generateMockHeadlines(): Headline[] {
-  const now = Date.now();
-  const items = [
-    "BREAKING: Pentagon confirms additional military assets deployed to Eastern Mediterranean",
-    "EU announces new round of sanctions targeting Russian energy sector",
-    "China conducts military exercises near Taiwan strait, Taiwan defense ministry says",
-    "Gold surges past $2,400 as geopolitical tensions escalate in Middle East",
-    "Ukraine claims successful drone strike on Russian military depot in Crimea",
-    "UN Security Council to hold emergency session on Red Sea shipping attacks",
-    "Iran nuclear talks stall as IAEA reports enrichment above agreed limits",
-    "North Korea fires ballistic missile toward Sea of Japan, South Korea military says",
-    "Oil prices spike 3% on concerns over Strait of Hormuz shipping lanes",
-    "NATO increases readiness level for Eastern European defense forces",
-    "Houthi rebels claim attack on commercial vessel in Red Sea",
-    "Russia-Ukraine ceasefire negotiations set to resume in Istanbul",
-    "Defense stocks rally — LMT, RTX, NOC all up over 2%",
-    "VIX spikes to 22 amid escalating global tensions",
-    "US sanctions new entities linked to Iranian drone program",
-  ];
-  return items.map((text, i) => ({
-    id: `mock-${i}-${now}`,
-    text,
-    timestamp: new Date(now - i * 180_000).toISOString(), // 3 min apart
-    url: "#",
-    source: "Simulated",
-  }));
-}
-
 function parseRSS(xml: string, source: string): Headline[] {
   const headlines: Headline[] = [];
   const itemRegex = /<item>([\s\S]*?)<\/item>/g;
