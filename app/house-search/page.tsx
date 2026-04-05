@@ -9,7 +9,25 @@ import { InfoPanel } from "@/components/house-search/info-panel";
 import { AddPropertyModal } from "@/components/house-search/add-property-modal";
 import { CsvImportModal } from "@/components/house-search/csv-import-modal";
 
+const SKIP_TRACE_STORAGE_KEY = "zs_skip_trace_pwd";
+
+function getStoredPassword(): string | null {
+  if (typeof window === "undefined") return null;
+  return sessionStorage.getItem(SKIP_TRACE_STORAGE_KEY);
+}
+
+function promptForPassword(): string | null {
+  const stored = getStoredPassword();
+  if (stored) return stored;
+  const pwd = window.prompt("Enter skip trace password:");
+  if (pwd) sessionStorage.setItem(SKIP_TRACE_STORAGE_KEY, pwd);
+  return pwd;
+}
+
 async function fetchSkipTrace(property: TaxDelinquentProperty) {
+  const password = promptForPassword();
+  if (!password) throw new Error("Password required");
+
   const res = await fetch("/api/skip-trace", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -19,10 +37,17 @@ async function fetchSkipTrace(property: TaxDelinquentProperty) {
       city: property.city,
       state: property.state,
       zip: property.zip,
+      password,
     }),
   });
   const data = await res.json();
-  if (data.error) throw new Error(data.error);
+  if (data.error) {
+    if (res.status === 403) {
+      sessionStorage.removeItem(SKIP_TRACE_STORAGE_KEY);
+      throw new Error("Invalid password");
+    }
+    throw new Error(data.error);
+  }
   return data as {
     phones: { number: string; type: string }[];
     emails: string[];

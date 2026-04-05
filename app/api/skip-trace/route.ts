@@ -115,10 +115,19 @@ function normalizeResponse(data: Record<string, unknown>): SkipTraceResult {
   return { phones, emails, mailingAddress };
 }
 
+const SKIP_TRACE_PASSWORD = process.env.SKIP_TRACE_PASSWORD || "ZN092328aa";
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { ownerName, address, city, state, zip } = body;
+    const { ownerName, address, city, state, zip, password } = body;
+
+    if (password !== SKIP_TRACE_PASSWORD) {
+      return NextResponse.json(
+        { error: "Invalid password" },
+        { status: 403 }
+      );
+    }
 
     if (!ownerName || !address) {
       return NextResponse.json(
