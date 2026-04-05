@@ -218,6 +218,12 @@ export interface TaxDelinquentProperty {
   sourceUrl: string | null;
   notes: string;
   addedAt: string;
+  skipTrace?: {
+    phones: { number: string; type: string }[];
+    emails: string[];
+    mailingAddress: string | null;
+  } | null;
+  skipTraceLoading?: boolean;
 }
 
 export const taxDelinquentProperties: TaxDelinquentProperty[] = [

@@ -10,7 +10,7 @@ import {
   createColumnHelper,
   type SortingState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Phone, Loader2, CheckCircle } from "lucide-react";
 import type { TaxDelinquentProperty } from "@/lib/mock-data";
 import { PropertyDetail } from "./property-detail";
 import type { FilterState } from "./filters";
@@ -58,9 +58,10 @@ interface PropertyTableProps {
   data: TaxDelinquentProperty[];
   filters: FilterState;
   onNotesChange: (id: number, notes: string) => void;
+  onSkipTrace: (id: number) => void;
 }
 
-export function PropertyTable({ data, filters, onNotesChange }: PropertyTableProps) {
+export function PropertyTable({ data, filters, onNotesChange, onSkipTrace }: PropertyTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: "yearsDelinquent", desc: true },
   ]);
@@ -174,6 +175,43 @@ export function PropertyTable({ data, filters, onNotesChange }: PropertyTablePro
         },
         size: 100,
       }),
+      col.display({
+        id: "skipTrace",
+        header: "Contact",
+        cell: (info) => {
+          const row = info.row.original;
+          if (row.skipTraceLoading) {
+            return (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-400" />
+            );
+          }
+          if (row.skipTrace) {
+            const count = row.skipTrace.phones.length + row.skipTrace.emails.length;
+            if (count > 0) {
+              return (
+                <span className="flex items-center gap-1 text-emerald-400">
+                  <CheckCircle className="h-3 w-3" />
+                  <span className="text-xxs font-mono">{count}</span>
+                </span>
+              );
+            }
+            return <span className="text-xxs text-muted-foreground">—</span>;
+          }
+          return (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onSkipTrace(row.id);
+              }}
+              className="flex items-center gap-1 rounded border border-emerald-500/30 px-1.5 py-0.5 text-xxs text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+              title="Skip trace this property"
+            >
+              <Phone className="h-3 w-3" />
+            </button>
+          );
+        },
+        size: 70,
+      }),
       col.accessor("lastPaymentDate", {
         header: "Last Pmt",
         cell: (info) => (
@@ -188,7 +226,7 @@ export function PropertyTable({ data, filters, onNotesChange }: PropertyTablePro
         size: 130,
       }),
     ],
-    []
+    [onSkipTrace]
   );
 
   const table = useReactTable({
@@ -248,6 +286,10 @@ export function PropertyTable({ data, filters, onNotesChange }: PropertyTablePro
                 <Fragment key={row.id}>
                   <tr
                     className={`border-b border-border/50 cursor-pointer transition-colors ${
+                      row.original.skipTrace && (row.original.skipTrace.phones.length > 0 || row.original.skipTrace.emails.length > 0)
+                        ? "bg-emerald-500/[0.03]"
+                        : ""
+                    } ${
                       expandedId === row.original.id
                         ? "bg-accent/50"
                         : "hover:bg-accent/30"
@@ -276,6 +318,7 @@ export function PropertyTable({ data, filters, onNotesChange }: PropertyTablePro
                           property={row.original}
                           onClose={() => setExpandedId(null)}
                           onNotesChange={onNotesChange}
+                          onSkipTrace={onSkipTrace}
                         />
                       </td>
                     </tr>

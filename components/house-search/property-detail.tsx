@@ -1,12 +1,18 @@
 "use client";
 
 import { TaxDelinquentProperty } from "@/lib/mock-data";
-import { X, MapPin, ExternalLink, Calculator, Bookmark } from "lucide-react";
+import { X, MapPin, ExternalLink, Calculator, Bookmark, Phone, Mail, Home, Loader2 } from "lucide-react";
 
 const fmt = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 const fmtSqft = (n: number) => n.toLocaleString("en-US");
+
+const fmtPhone = (n: string) => {
+  const d = n.replace(/\D/g, "");
+  if (d.length === 10) return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
+  return n;
+};
 
 const TYPE_LABELS: Record<string, string> = {
   single_family: "Single Family",
@@ -30,13 +36,23 @@ const STATUS_COLORS: Record<string, string> = {
   foreclosure_pending: "text-red-400",
 };
 
+const PHONE_TYPE_COLORS: Record<string, string> = {
+  mobile: "bg-emerald-500/15 text-emerald-400",
+  cell: "bg-emerald-500/15 text-emerald-400",
+  wireless: "bg-emerald-500/15 text-emerald-400",
+  landline: "bg-blue-500/15 text-blue-400",
+  voip: "bg-purple-500/15 text-purple-400",
+  unknown: "bg-zinc-500/15 text-zinc-400",
+};
+
 interface PropertyDetailProps {
   property: TaxDelinquentProperty;
   onClose: () => void;
   onNotesChange: (id: number, notes: string) => void;
+  onSkipTrace: (id: number) => void;
 }
 
-export function PropertyDetail({ property: p, onClose, onNotesChange }: PropertyDetailProps) {
+export function PropertyDetail({ property: p, onClose, onNotesChange, onSkipTrace }: PropertyDetailProps) {
   const googleMapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(
     `${p.address}, ${p.city}, ${p.state} ${p.zip}`
   )}`;
@@ -56,6 +72,10 @@ export function PropertyDetail({ property: p, onClose, onNotesChange }: Property
 
   const equity = p.estimatedMarketValue - p.totalTaxOwed;
   const equityPct = ((equity / p.estimatedMarketValue) * 100).toFixed(1);
+
+  const hasSkipTrace = p.skipTrace !== undefined && p.skipTrace !== null;
+  const hasResults = hasSkipTrace && (p.skipTrace!.phones.length > 0 || p.skipTrace!.emails.length > 0);
+  const propertyFullAddr = `${p.address}, ${p.city}, ${p.state} ${p.zip}`.toLowerCase();
 
   return (
     <div className="border-t bg-card/50 px-4 py-3">
@@ -219,17 +239,104 @@ export function PropertyDetail({ property: p, onClose, onNotesChange }: Property
             >
               <ExternalLink className="h-3 w-3" /> Redfin
             </a>
-            <div className="flex gap-1.5 pt-1">
+            <div className="flex gap-1.5 pt-1 flex-wrap">
               <button className="flex items-center gap-1 rounded border px-2 py-1 text-xxs hover:bg-accent">
                 <Calculator className="h-3 w-3" /> Analyze Deal
               </button>
               <button className="flex items-center gap-1 rounded border px-2 py-1 text-xxs hover:bg-accent">
                 <Bookmark className="h-3 w-3" /> Save
               </button>
+              {!hasSkipTrace && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSkipTrace(p.id);
+                  }}
+                  disabled={p.skipTraceLoading}
+                  className="flex items-center gap-1 rounded border border-emerald-500/30 px-2 py-1 text-xxs text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-50 transition-colors"
+                >
+                  {p.skipTraceLoading ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Phone className="h-3 w-3" />
+                  )}
+                  {p.skipTraceLoading ? "Tracing..." : "Get Contact"}
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Skip Trace Results */}
+      {hasSkipTrace && (
+        <div className={`mt-3 rounded-md border p-3 ${hasResults ? "border-emerald-500/30 bg-emerald-500/5" : "border-border bg-muted/20"}`}>
+          <h4 className="text-xxs font-medium uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <Phone className="h-3 w-3" />
+            <span className={hasResults ? "text-emerald-400" : "text-muted-foreground"}>
+              Contact Info
+            </span>
+          </h4>
+
+          {!hasResults ? (
+            <p className="text-xxs text-muted-foreground">No contact info found</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-4 text-xs">
+              {/* Phones */}
+              {p.skipTrace!.phones.length > 0 && (
+                <div className="space-y-1">
+                  <span className="text-xxs text-muted-foreground">Phone Numbers</span>
+                  {p.skipTrace!.phones.map((ph, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <a
+                        href={`tel:${ph.number}`}
+                        className="font-mono text-foreground hover:text-primary transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {fmtPhone(ph.number)}
+                      </a>
+                      <span className={`inline-block rounded px-1 py-0.5 text-[9px] font-medium ${PHONE_TYPE_COLORS[ph.type] || PHONE_TYPE_COLORS.unknown}`}>
+                        {ph.type}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Emails */}
+              {p.skipTrace!.emails.length > 0 && (
+                <div className="space-y-1">
+                  <span className="text-xxs text-muted-foreground">Email Addresses</span>
+                  {p.skipTrace!.emails.map((email, i) => (
+                    <div key={i}>
+                      <a
+                        href={`mailto:${email}`}
+                        className="font-mono text-foreground hover:text-primary transition-colors flex items-center gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Mail className="h-3 w-3 text-muted-foreground" />
+                        {email}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Mailing Address */}
+              {p.skipTrace!.mailingAddress &&
+                p.skipTrace!.mailingAddress.toLowerCase() !== propertyFullAddr && (
+                  <div className="space-y-1">
+                    <span className="text-xxs text-muted-foreground">Mailing Address</span>
+                    <div className="flex items-start gap-1 text-foreground">
+                      <Home className="h-3 w-3 mt-0.5 text-muted-foreground shrink-0" />
+                      <span className="font-mono">{p.skipTrace!.mailingAddress}</span>
+                    </div>
+                  </div>
+                )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Notes */}
       <div className="mt-3">
