@@ -174,10 +174,24 @@ const columns: ColumnDef<REListing, unknown>[] = [
   {
     accessorKey: "sourcePlatform",
     header: "Source",
-    size: 80,
-    cell: ({ row }) => (
-      <span className="text-muted-foreground">{row.original.sourcePlatform}</span>
-    ),
+    size: 100,
+    cell: ({ row }) => {
+      const src = row.original.sourcePlatform;
+      const url = row.original.sourceUrl;
+      const badgeColor =
+        src === "LoopNet" ? "bg-blue-500/15 text-blue-400" :
+        src === "Crexi" ? "bg-emerald-500/15 text-emerald-400" :
+        src === "Manual" ? "bg-zinc-500/15 text-zinc-400" :
+        "bg-violet-500/15 text-violet-400";
+      return url ? (
+        <a href={url} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium ${badgeColor} hover:opacity-80 transition-opacity`}>
+          {src}
+          <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </a>
+      ) : (
+        <span className={`inline-flex rounded px-1.5 py-0.5 text-[10px] font-medium ${badgeColor}`}>{src}</span>
+      );
+    },
   },
   {
     id: "actions",

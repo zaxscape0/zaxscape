@@ -16,6 +16,15 @@ export function OpportunityFeed() {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {opportunities.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <Zap className="h-5 w-5 text-muted-foreground/40 mb-2" />
+            <p className="text-xs text-muted-foreground">No opportunities yet</p>
+            <p className="text-xxs text-muted-foreground/60 mt-0.5">
+              Opportunities will appear here from your RE &amp; business scrapers
+            </p>
+          </div>
+        ) : (
         <div className="space-y-1.5">
           {opportunities.map((item) => (
             <a
@@ -49,6 +58,7 @@ export function OpportunityFeed() {
             </a>
           ))}
         </div>
+        )}
       </CardContent>
     </Card>
   );

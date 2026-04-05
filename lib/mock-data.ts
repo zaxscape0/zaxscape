@@ -108,74 +108,7 @@ export interface OpportunityItem {
   sourceUrl?: string;
 }
 
-export const opportunities: OpportunityItem[] = [
-  {
-    id: 1,
-    type: "property",
-    title: "4-Unit Multifamily",
-    price: 320000,
-    metric: "8.2%",
-    metricLabel: "Cap Rate",
-    city: "Brockton, MA",
-    daysListed: 3,
-    sourceUrl: "https://www.loopnet.com/listing/brockton-ma/1",
-  },
-  {
-    id: 2,
-    type: "business",
-    title: "Coin Laundromat",
-    price: 185000,
-    metric: "2.8x",
-    metricLabel: "Multiple",
-    city: "Quincy, MA",
-    daysListed: 5,
-    sourceUrl: "https://www.bizbuysell.com/listing/coin-laundromat",
-  },
-  {
-    id: 3,
-    type: "property",
-    title: "6-Unit Mixed Use",
-    price: 480000,
-    metric: "7.5%",
-    metricLabel: "Cap Rate",
-    city: "Worcester, MA",
-    daysListed: 1,
-    sourceUrl: "https://www.loopnet.com/listing/quincy-ma/2",
-  },
-  {
-    id: 4,
-    type: "business",
-    title: "Auto Repair Shop",
-    price: 250000,
-    metric: "3.1x",
-    metricLabel: "Multiple",
-    city: "Fall River, MA",
-    daysListed: 8,
-    sourceUrl: "https://www.bizbuysell.com/listing/hvac-company",
-  },
-  {
-    id: 5,
-    type: "property",
-    title: "8-Unit Apartment",
-    price: 550000,
-    metric: "6.9%",
-    metricLabel: "Cap Rate",
-    city: "Lynn, MA",
-    daysListed: 12,
-    sourceUrl: "https://www.loopnet.com/listing/worcester-ma/3",
-  },
-  {
-    id: 6,
-    type: "business",
-    title: "Pizza Restaurant",
-    price: 125000,
-    metric: "2.2x",
-    metricLabel: "Multiple",
-    city: "Lowell, MA",
-    daysListed: 2,
-    sourceUrl: "https://www.bizbuysell.com/listing/auto-detail",
-  },
-];
+export const opportunities: OpportunityItem[] = [];
 
 export interface WatchlistMover {
   symbol: string;
