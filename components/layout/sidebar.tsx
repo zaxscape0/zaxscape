@@ -25,6 +25,7 @@ import {
   Settings,
   ChevronsLeft,
   ChevronsRight,
+  Search,
 } from "lucide-react";
 
 const navItems = [
@@ -35,6 +36,7 @@ const navItems = [
   { name: "Lenders", icon: Building2, href: "/lenders", shortcut: "5" },
   { name: "Businesses", icon: Store, href: "/businesses", shortcut: "6" },
   { name: "Real Estate", icon: Home, href: "/real-estate", shortcut: "7" },
+  { name: "House Search", icon: Search, href: "/house-search" },
   { name: "Deal Analyzer", icon: Calculator, href: "/deals", shortcut: "8" },
   { name: "Map", icon: Map, href: "/map", shortcut: "9" },
   { divider: true } as const,
