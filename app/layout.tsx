@@ -3,9 +3,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Sidebar } from "@/components/layout/sidebar";
-import { TopBar } from "@/components/layout/topbar";
-import { CommandPalette } from "@/components/layout/command-palette";
+import { AuthProvider } from "@/lib/auth-context";
+import { AppShell } from "@/components/layout/app-shell";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -41,16 +40,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TooltipProvider>
-            <div className="flex h-screen overflow-hidden">
-              <Sidebar />
-              <div className="flex flex-1 flex-col overflow-hidden">
-                <TopBar />
-                <main className="flex-1 overflow-y-auto p-3">
-                  {children}
-                </main>
-              </div>
-            </div>
-            <CommandPalette />
+            <AuthProvider>
+              <AppShell>{children}</AppShell>
+            </AuthProvider>
           </TooltipProvider>
         </ThemeProvider>
       </body>

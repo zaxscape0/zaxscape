@@ -1,13 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { Bell, Moon, Sun, Search } from "lucide-react";
+import { Bell, Moon, Sun, Search, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/lib/auth-context";
 
 export function TopBar() {
   const { theme, setTheme } = useTheme();
+  const { signOut } = useAuth();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -42,6 +44,11 @@ export function TopBar() {
           >
             3
           </Badge>
+        </Button>
+
+        {/* Sign out */}
+        <Button variant="ghost" size="icon" onClick={() => signOut()} title="Sign out">
+          <LogOut className="h-4 w-4" />
         </Button>
 
         {/* Theme toggle */}

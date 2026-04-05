@@ -12,3 +12,8 @@ export function createServiceClient() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
+
+// Browser client for auth
+export function createBrowserClient() {
+  return createClient(supabaseUrl, supabaseAnonKey);
+}
