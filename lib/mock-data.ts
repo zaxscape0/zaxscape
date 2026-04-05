@@ -105,6 +105,7 @@ export interface OpportunityItem {
   metricLabel: string;
   city: string;
   daysListed: number;
+  sourceUrl?: string;
 }
 
 export const opportunities: OpportunityItem[] = [
@@ -117,6 +118,7 @@ export const opportunities: OpportunityItem[] = [
     metricLabel: "Cap Rate",
     city: "Brockton, MA",
     daysListed: 3,
+    sourceUrl: "https://www.loopnet.com/listing/brockton-ma/1",
   },
   {
     id: 2,
@@ -127,6 +129,7 @@ export const opportunities: OpportunityItem[] = [
     metricLabel: "Multiple",
     city: "Quincy, MA",
     daysListed: 5,
+    sourceUrl: "https://www.bizbuysell.com/listing/coin-laundromat",
   },
   {
     id: 3,
@@ -137,6 +140,7 @@ export const opportunities: OpportunityItem[] = [
     metricLabel: "Cap Rate",
     city: "Worcester, MA",
     daysListed: 1,
+    sourceUrl: "https://www.loopnet.com/listing/quincy-ma/2",
   },
   {
     id: 4,
@@ -147,6 +151,7 @@ export const opportunities: OpportunityItem[] = [
     metricLabel: "Multiple",
     city: "Fall River, MA",
     daysListed: 8,
+    sourceUrl: "https://www.bizbuysell.com/listing/hvac-company",
   },
   {
     id: 5,
@@ -157,6 +162,7 @@ export const opportunities: OpportunityItem[] = [
     metricLabel: "Cap Rate",
     city: "Lynn, MA",
     daysListed: 12,
+    sourceUrl: "https://www.loopnet.com/listing/worcester-ma/3",
   },
   {
     id: 6,
@@ -167,6 +173,7 @@ export const opportunities: OpportunityItem[] = [
     metricLabel: "Multiple",
     city: "Lowell, MA",
     daysListed: 2,
+    sourceUrl: "https://www.bizbuysell.com/listing/auto-detail",
   },
 ];
 

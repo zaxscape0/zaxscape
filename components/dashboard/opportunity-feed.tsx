@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { opportunities } from "@/lib/mock-data";
 import { formatCompact } from "@/lib/utils";
-import { Store, Home, Zap } from "lucide-react";
+import { Store, Home, Zap, ExternalLink } from "lucide-react";
 
 export function OpportunityFeed() {
   return (
@@ -18,16 +18,19 @@ export function OpportunityFeed() {
       <CardContent>
         <div className="space-y-1.5">
           {opportunities.map((item) => (
-            <div
+            <a
               key={item.id}
-              className="flex items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-accent/50 cursor-pointer transition-colors"
+              href={item.sourceUrl || (item.type === "business" ? "/businesses" : "/real-estate")}
+              target={item.sourceUrl ? "_blank" : "_self"}
+              rel={item.sourceUrl ? "noopener noreferrer" : undefined}
+              className="flex items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-accent/50 cursor-pointer transition-colors group"
             >
               {item.type === "business" ? (
                 <Store className="h-3.5 w-3.5 text-primary shrink-0" />
               ) : (
                 <Home className="h-3.5 w-3.5 text-warning shrink-0" />
               )}
-              <span className="font-medium flex-1 truncate">{item.title}</span>
+              <span className="font-medium flex-1 truncate group-hover:text-primary transition-colors">{item.title}</span>
               <span className="font-mono tabular-nums text-muted-foreground">
                 {formatCompact(item.price)}
               </span>
@@ -40,7 +43,10 @@ export function OpportunityFeed() {
               {item.daysListed <= 3 && (
                 <Badge variant="up">New</Badge>
               )}
-            </div>
+              {item.sourceUrl && (
+                <ExternalLink className="h-3 w-3 text-muted-foreground/50 group-hover:text-primary shrink-0 transition-colors" />
+              )}
+            </a>
           ))}
         </div>
       </CardContent>
