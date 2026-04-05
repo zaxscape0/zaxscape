@@ -143,16 +143,32 @@ async function scrape() {
 
     if (rows.length === 0) continue
 
+    // Fetch existing records for this county to deduplicate
+    const { data: existing } = await db.from('overages')
+      .select('owner_name,surplus_amount')
+      .eq('county', county)
+      .eq('state', 'GA')
+
+    const existingSet = new Set(
+      (existing || []).map(e => `${e.owner_name}|${e.surplus_amount}`)
+    )
+
+    const newRows = rows.filter(
+      r => !existingSet.has(`${r.owner_name}|${r.surplus_amount}`)
+    )
+
+    if (newRows.length === 0) {
+      log[county] = { ok: true, parsed: rows.length, new: 0, skipped: rows.length }
+      continue
+    }
+
     const { data, error } = await db.from('overages')
-      .upsert(rows as never[], {
-        onConflict: 'owner_name,county,surplus_amount',
-        ignoreDuplicates: true,
-      })
+      .insert(newRows as never[])
       .select('id')
 
     const added = data?.length || 0
     totalNew += added
-    log[county] = { ok: !error, parsed: rows.length, new: added, err: error?.message }
+    log[county] = { ok: !error, parsed: rows.length, new: added, skipped: rows.length - newRows.length, err: error?.message }
   }
 
   return { ok: true, totalNew, counties: log, ts: new Date().toISOString() }
