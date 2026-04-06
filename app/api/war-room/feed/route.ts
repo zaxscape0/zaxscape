@@ -90,6 +90,8 @@ async function fetchFromReutersFTBloomberg(): Promise<Headline[]> {
     { url: "https://news.google.com/rss/search?q=site:bloomberg.com+geopolitics+OR+war+OR+military+OR+sanctions&hl=en-US&gl=US&ceid=US:en", source: "Bloomberg" },
     { url: "https://feeds.reuters.com/Reuters/worldNews", source: "Reuters" },
     { url: "https://www.ft.com/rss/home/us", source: "Financial Times" },
+    { url: "https://finance.yahoo.com/news/rssindex", source: "Yahoo Finance" },
+    { url: "https://news.google.com/rss/search?q=site:finance.yahoo.com+markets+OR+economy+OR+geopolitics&hl=en-US&gl=US&ceid=US:en", source: "Yahoo Finance" },
   ];
   
   const allHeadlines: Headline[] = [];

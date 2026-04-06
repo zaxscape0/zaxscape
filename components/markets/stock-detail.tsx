@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { QuoteData } from "@/lib/use-market-data";
 import {
   useChartData,
@@ -536,7 +536,89 @@ export function StockDetail({ quote, onClose }: StockDetailProps) {
           <StatCell label="" value="" />
           <StatCell label="" value="" />
         </div>
+
+        {/* News */}
+        <StockNews symbol={quote.symbol.replace("^", "")} />
       </div>
+    </div>
+  );
+}
+
+// ─── Stock News ──────────────────────────────────────────────────────────────
+
+interface NewsItem {
+  title: string;
+  url: string;
+  source: string;
+  publishedAt: string;
+}
+
+function StockNews({ symbol }: { symbol: string }) {
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/markets/news?symbol=${encodeURIComponent(symbol)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        setNews(d.news || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [symbol]);
+
+  const sourceBadgeColor: Record<string, string> = {
+    "Reuters": "text-orange-400 border-orange-400/30",
+    "Bloomberg": "text-purple-400 border-purple-400/30",
+    "Financial Times": "text-pink-400 border-pink-400/30",
+    "Yahoo Finance": "text-indigo-400 border-indigo-400/30",
+  };
+
+  const timeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  };
+
+  return (
+    <div className="mt-3 border-t border-border/50 pt-3">
+      <h4 className="text-[9px] text-muted-foreground/60 uppercase tracking-widest font-mono mb-2">
+        Top News
+      </h4>
+      {loading ? (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground/50">
+          <div className="h-3 w-3 animate-spin rounded-full border border-muted-foreground/30 border-t-transparent" />
+          Loading...
+        </div>
+      ) : news.length === 0 ? (
+        <p className="text-xs text-muted-foreground/40 font-mono">No recent news</p>
+      ) : (
+        <div className="space-y-1.5">
+          {news.map((item, i) => (
+            <a
+              key={i}
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-2 rounded px-1.5 py-1 text-xs hover:bg-accent/30 transition-colors group"
+            >
+              <span className="text-[9px] font-mono text-muted-foreground/50 tabular-nums whitespace-nowrap mt-0.5">
+                {timeAgo(item.publishedAt)}
+              </span>
+              <span className="flex-1 text-foreground/80 group-hover:text-foreground leading-tight">
+                {item.title}
+              </span>
+              <span className={`text-[8px] font-mono border rounded px-1 py-0.5 whitespace-nowrap ${sourceBadgeColor[item.source] || "text-muted-foreground border-border"}`}>
+                {item.source}
+              </span>
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
