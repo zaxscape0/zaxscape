@@ -468,7 +468,7 @@
       "scrapedAt": "2026-04-06T00:24:32.751Z"
     },
     {
-      "title": "From-scratch Bakery & Café | Turnkey Opportunity",
+      "title": "From-scratch Bakery & Caf\u00e9 | Turnkey Opportunity",
       "askingPrice": 249000,
       "cashFlow": 97995,
       "revenue": 374249,
@@ -993,7 +993,7 @@
       "scrapedAt": "2026-04-06T00:24:48.498Z"
     },
     {
-      "title": "HomeVestors (We Buy Ugly Houses® ) Franchise",
+      "title": "HomeVestors (We Buy Ugly Houses\u00ae ) Franchise",
       "askingPrice": 42500,
       "cashFlow": null,
       "revenue": 616948,
@@ -1068,7 +1068,7 @@
       "scrapedAt": "2026-04-06T00:24:58.518Z"
     },
     {
-      "title": "Middleboro-Bridgewater_Area …Beer & Wine C-store",
+      "title": "Middleboro-Bridgewater_Area \u2026Beer & Wine C-store",
       "askingPrice": 150000,
       "cashFlow": null,
       "revenue": 364000,
@@ -1113,7 +1113,7 @@
       "scrapedAt": "2026-04-06T00:24:58.518Z"
     },
     {
-      "title": "High-Margin Eyewear Store – Prime Boston Location",
+      "title": "High-Margin Eyewear Store \u2013 Prime Boston Location",
       "askingPrice": 240000,
       "cashFlow": 148785,
       "revenue": 317184,
@@ -1352,5 +1352,6 @@
       "source": "BusinessesForSale",
       "scrapedAt": "2026-04-06T00:24:58.518Z"
     }
-  ]
+  ],
+  "scrapedAt": ""
 }
