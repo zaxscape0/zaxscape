@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "scrape:re": "npx tsx scripts/scrape-real-estate.ts",
+    "scrape:biz": "npx tsx scripts/scrape-businesses.ts",
+    "scrape:all": "npm run scrape:re && npm run scrape:biz"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -28,11 +31,13 @@
     "lucide-react": "^1.7.0",
     "next": "14.2.35",
     "next-themes": "^0.4.6",
+    "playwright": "^1.59.1",
     "react": "^18",
     "react-dom": "^18",
     "recharts": "^3.8.1",
     "tailwind-merge": "^3.5.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.21.0"
   },
   "devDependencies": {
     "@types/node": "^20",

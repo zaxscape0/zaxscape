@@ -18,6 +18,71 @@ export default function RealEstatePage() {
   const [pasteUrl, setPasteUrl] = useState("");
   const [parsing, setParsing] = useState(false);
   const [parseMsg, setParseMsg] = useState<string | null>(null);
+  const [lastScraped, setLastScraped] = useState<string | null>(null);
+
+  // Load scraped listings on mount
+  useState(() => {
+    fetch("/api/listings/real-estate")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.listings && data.listings.length > 0) {
+          setLastScraped(data.lastScraped);
+          const existingUrls = new Set(mockREListings.map((l) => l.sourceUrl).filter(Boolean));
+          let newId = Math.max(...mockREListings.map((l) => l.id), 0) + 1;
+          const scraped: REListing[] = data.listings
+            .filter((r: { listingUrl: string }) => !existingUrls.has(r.listingUrl))
+            .map((r: {
+              address: string;
+              city: string;
+              state: string;
+              askingPrice: number | null;
+              propertyType: string;
+              capRate: number | null;
+              units: number | null;
+              sqft: number | null;
+              brokerName: string | null;
+              listingUrl: string;
+              source: string;
+            }) => ({
+              id: newId++,
+              address: r.address,
+              city: r.city,
+              state: r.state || "MA",
+              zip: "",
+              propertyType: normalizePropertyType(r.propertyType),
+              askingPrice: r.askingPrice || 0,
+              units: r.units,
+              sqft: r.sqft,
+              lotSize: null,
+              yearBuilt: null,
+              occupancyPct: null,
+              reportedNoi: null,
+              estimatedNoi: null,
+              reportedCapRate: r.capRate,
+              estimatedCapRate: null,
+              grossRent: null,
+              taxes: null,
+              insurance: null,
+              hoa: null,
+              pricePerUnit: r.units ? Math.round((r.askingPrice || 0) / r.units) : null,
+              pricePerSqft: r.sqft ? Math.round((r.askingPrice || 0) / r.sqft) : null,
+              brokerName: r.brokerName,
+              brokerCompany: null,
+              brokerPhone: null,
+              sourcePlatform: r.source,
+              sourceUrl: r.listingUrl,
+              daysListed: 0,
+              status: "active" as const,
+              notes: "",
+              rentRoll: null,
+            }));
+          if (scraped.length > 0) {
+            setListings((prev) => [...prev, ...scraped]);
+          }
+        }
+      })
+      .catch(() => {});
+  });
 
   const nextId = Math.max(...listings.map((l) => l.id), 0) + 1;
 
@@ -191,6 +256,11 @@ export default function RealEstatePage() {
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xxs font-mono font-medium text-primary">
             {activeCount} active
           </span>
+          {lastScraped && (
+            <span className="text-xxs text-muted-foreground/60">
+              Last scraped: {new Date(lastScraped).toLocaleDateString()}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button

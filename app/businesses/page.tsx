@@ -23,6 +23,79 @@ export default function BusinessesPage() {
   const [pasteUrl, setPasteUrl] = useState("");
   const [parsing, setParsing] = useState(false);
   const [parseMsg, setParseMsg] = useState<string | null>(null);
+  const [lastScraped, setLastScraped] = useState<string | null>(null);
+
+  // Load scraped listings on mount
+  useState(() => {
+    fetch("/api/listings/businesses")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.listings && data.listings.length > 0) {
+          setLastScraped(data.lastScraped);
+          const existingUrls = new Set(mockBizListings.map((l) => l.sourceUrl).filter(Boolean));
+          let newId = Math.max(...mockBizListings.map((l) => l.id), 0) + 1;
+          const scraped: BusinessListing[] = data.listings
+            .filter((r: { listingUrl: string }) => !existingUrls.has(r.listingUrl))
+            .map((r: {
+              title: string;
+              askingPrice: number | null;
+              cashFlow: number | null;
+              revenue: number | null;
+              industry: string;
+              city: string;
+              state: string;
+              brokerName: string | null;
+              brokerCompany: string | null;
+              listingUrl: string;
+              daysListed: number | null;
+              source: string;
+            }) => {
+              const askingPrice = r.askingPrice || 0;
+              const sdeCashFlow = r.cashFlow || null;
+              const askingMultiple = sdeCashFlow ? +(askingPrice / sdeCashFlow).toFixed(1) : null;
+              const base: BusinessListing = {
+                id: newId++,
+                title: r.title,
+                askingPrice,
+                revenue: r.revenue,
+                sdeCashFlow,
+                ebitda: null,
+                industry: r.industry || "Services",
+                subIndustry: null,
+                city: r.city,
+                state: r.state || "MA",
+                zip: "",
+                brokerName: r.brokerName,
+                brokerCompany: r.brokerCompany,
+                brokerPhone: null,
+                brokerEmail: null,
+                reasonForSale: null,
+                description: null,
+                employees: null,
+                yearEstablished: null,
+                isFranchise: false,
+                isSemiAbsentee: false,
+                hasRecurringRevenue: false,
+                sourcePlatform: r.source,
+                sourceUrl: r.listingUrl,
+                daysListed: r.daysListed || 0,
+                status: "active",
+                askingMultiple,
+                score: 0,
+                flags: {},
+                notes: "",
+              };
+              base.score = calculateBuyBoxScore(base);
+              base.flags = computeFlags(base);
+              return base;
+            });
+          if (scraped.length > 0) {
+            setListings((prev) => [...prev, ...scraped]);
+          }
+        }
+      })
+      .catch(() => {});
+  });
 
   const nextId = Math.max(...listings.map((l) => l.id), 0) + 1;
 
@@ -203,6 +276,11 @@ export default function BusinessesPage() {
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xxs font-mono font-medium text-primary">
             {activeCount} active
           </span>
+          {lastScraped && (
+            <span className="text-xxs text-muted-foreground/60">
+              Last scraped: {new Date(lastScraped).toLocaleDateString()}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button
