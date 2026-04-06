@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import L from "leaflet";
-// leaflet CSS loaded via CDN in layout.tsx
 import { formatCurrency } from "@/lib/format";
 import { taxDelinquentProperties, TaxDelinquentProperty } from "@/lib/mock-data";
 
@@ -15,6 +14,14 @@ if (typeof window !== "undefined") {
     iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
     shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   });
+
+  // Load leaflet CSS dynamically
+  if (!document.querySelector('link[href*="leaflet"]')) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    document.head.appendChild(link);
+  }
 }
 
 const BOSTON_CENTER: [number, number] = [42.36, -71.06];
