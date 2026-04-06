@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import L from "leaflet";
-// leaflet CSS imported in globals.css
+// leaflet CSS loaded via CDN in layout.tsx
 import { formatCurrency } from "@/lib/format";
 import { taxDelinquentProperties, TaxDelinquentProperty } from "@/lib/mock-data";
 
