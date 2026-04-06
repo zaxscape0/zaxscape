@@ -9,7 +9,7 @@ import { EconomicIndicators } from "@/components/markets/economic-indicators";
 import { RefreshCw } from "lucide-react";
 
 const WATCHLIST_SYMBOLS = [
-  "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "BRK-B",
+  "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "BRK.B",
   "JPM", "V", "UNH", "XOM", "O", "SCHD", "VNQ", "SPY",
 ];
 

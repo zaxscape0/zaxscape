@@ -9,12 +9,12 @@ interface IndexOverviewProps {
 }
 
 const INDEX_SYMBOLS = [
-  { symbol: "^GSPC", label: "S&P 500" },
-  { symbol: "^IXIC", label: "Nasdaq" },
-  { symbol: "^DJI", label: "Dow Jones" },
-  { symbol: "^RUT", label: "Russell 2K" },
-  { symbol: "^TNX", label: "10Y Yield" },
-  { symbol: "^VIX", label: "VIX" },
+  { symbol: "SPY", label: "S&P 500" },
+  { symbol: "QQQ", label: "Nasdaq" },
+  { symbol: "DIA", label: "Dow Jones" },
+  { symbol: "IWM", label: "Russell 2K" },
+  { symbol: "TLT", label: "20Y Treasury" },
+  { symbol: "UVXY", label: "VIX" },
 ];
 
 export function IndexOverview({ data, loading }: IndexOverviewProps) {
@@ -57,9 +57,7 @@ export function IndexOverview({ data, loading }: IndexOverviewProps) {
               {idx.label}
             </p>
             <p className="mt-1 text-base font-bold tabular-nums font-mono">
-              {idx.symbol === "^TNX"
-                ? `${formatNumber(quote.price, 3)}%`
-                : formatNumber(quote.price, 2)}
+              {formatNumber(quote.price, 2)}
             </p>
             <div className="mt-0.5 flex items-center gap-2">
               <span className={`text-xs font-mono tabular-nums ${colorClass}`}>
