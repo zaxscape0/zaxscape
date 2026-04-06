@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { Map } from "lucide-react";
+import React from "react";
 
 const MapView = dynamic(() => import("@/components/map/map-view"), { ssr: false });
 
@@ -31,6 +32,29 @@ interface BizListing {
   source: string;
 }
 
+class MapErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { error: Error | null }
+> {
+  state = { error: null as Error | null };
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="flex-1 flex items-center justify-center text-xs text-red-400 p-4">
+          <div>
+            <p className="font-semibold mb-1">Map failed to load</p>
+            <p className="font-mono text-xxs opacity-70">{this.state.error.message}</p>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function MapPage() {
   const [reListings, setReListings] = useState<REListing[]>([]);
   const [bizListings, setBizListings] = useState<BizListing[]>([]);
@@ -54,13 +78,15 @@ export default function MapPage() {
         <h1 className="text-sm font-semibold uppercase tracking-wider">Map View</h1>
         <span className="text-xxs text-muted-foreground">Boston · 100mi radius</span>
       </div>
-      {!loaded ? (
-        <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground">
-          Loading map data...
-        </div>
-      ) : (
-        <MapView reListings={reListings} bizListings={bizListings} />
-      )}
+      <MapErrorBoundary>
+        {!loaded ? (
+          <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground">
+            Loading map data...
+          </div>
+        ) : (
+          <MapView reListings={reListings} bizListings={bizListings} />
+        )}
+      </MapErrorBoundary>
     </div>
   );
 }
