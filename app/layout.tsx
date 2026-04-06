@@ -5,6 +5,10 @@ import { ThemeProvider } from "@/components/layout/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/lib/auth-context";
 import { AppShell } from "@/components/layout/app-shell";
+import { SavedProvider } from "@/lib/saved-store";
+import { NotesProvider } from "@/lib/notes-store";
+import { PortfolioProvider } from "@/lib/portfolio-store";
+import { AlertsProvider } from "@/lib/alerts-store";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -41,7 +45,15 @@ export default function RootLayout({
         >
           <TooltipProvider>
             <AuthProvider>
-              <AppShell>{children}</AppShell>
+              <SavedProvider>
+                <NotesProvider>
+                  <PortfolioProvider>
+                    <AlertsProvider>
+                      <AppShell>{children}</AppShell>
+                    </AlertsProvider>
+                  </PortfolioProvider>
+                </NotesProvider>
+              </SavedProvider>
             </AuthProvider>
           </TooltipProvider>
         </ThemeProvider>

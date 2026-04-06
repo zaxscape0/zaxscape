@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { REListing, getCapRate, getNoi, isEstimatedCapRate, isEstimatedNoi, propertyTypeLabels } from "@/lib/re-data";
 import { formatCurrency } from "@/lib/format";
-import { X, MapPin, Calculator, Bookmark, ExternalLink } from "lucide-react";
+import { X, MapPin, Calculator, Bookmark, BookmarkCheck, ExternalLink } from "lucide-react";
+import { useSaved } from "@/lib/saved-store";
 
 function EstBadge() {
   return (
@@ -34,6 +35,8 @@ interface Props {
 
 export function REDetailPanel({ listing, onClose, onNotesChange }: Props) {
   const [notes, setNotes] = useState(listing.notes);
+  const { isSaved, toggleSave } = useSaved();
+  const saved = isSaved("real-estate", listing.address);
   const capRate = getCapRate(listing);
   const noi = getNoi(listing);
 
@@ -223,8 +226,21 @@ export function REDetailPanel({ listing, onClose, onNotesChange }: Props) {
         <button className="flex-1 flex items-center justify-center gap-1.5 rounded bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:bg-primary/90 transition-colors">
           <Calculator className="h-3.5 w-3.5" /> Analyze Deal
         </button>
-        <button className="flex items-center justify-center gap-1.5 rounded border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors">
-          <Bookmark className="h-3.5 w-3.5" /> Save
+        <button
+          onClick={() => toggleSave({
+            type: "real-estate",
+            title: listing.address,
+            keyMetric: capRate ? `Cap: ${capRate.toFixed(1)}%` : listing.propertyType,
+            price: listing.askingPrice,
+            notes: "",
+            href: "/real-estate",
+          })}
+          className={`flex items-center justify-center gap-1.5 rounded border px-3 py-1.5 text-xs transition-colors ${
+            saved ? "text-primary border-primary/50" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+          }`}
+        >
+          {saved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+          {saved ? "Saved" : "Save"}
         </button>
       </div>
     </div>

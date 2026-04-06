@@ -1,7 +1,8 @@
 "use client";
 
 import { TaxDelinquentProperty } from "@/lib/mock-data";
-import { X, MapPin, ExternalLink, Calculator, Bookmark, Phone, Mail, Home, Loader2 } from "lucide-react";
+import { X, MapPin, ExternalLink, Calculator, Bookmark, BookmarkCheck, Phone, Mail, Home, Loader2 } from "lucide-react";
+import { useSaved } from "@/lib/saved-store";
 
 const fmt = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -53,6 +54,8 @@ interface PropertyDetailProps {
 }
 
 export function PropertyDetail({ property: p, onClose, onNotesChange, onSkipTrace }: PropertyDetailProps) {
+  const { isSaved, toggleSave } = useSaved();
+  const saved = isSaved("tax-delinquent", p.address);
   const googleMapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(
     `${p.address}, ${p.city}, ${p.state} ${p.zip}`
   )}`;
@@ -243,8 +246,21 @@ export function PropertyDetail({ property: p, onClose, onNotesChange, onSkipTrac
               <button className="flex items-center gap-1 rounded border px-2 py-1 text-xxs hover:bg-accent">
                 <Calculator className="h-3 w-3" /> Analyze Deal
               </button>
-              <button className="flex items-center gap-1 rounded border px-2 py-1 text-xxs hover:bg-accent">
-                <Bookmark className="h-3 w-3" /> Save
+              <button
+                onClick={() => toggleSave({
+                  type: "tax-delinquent",
+                  title: p.address,
+                  keyMetric: `${p.yearsDelinquent}yr delinquent · $${(p.totalTaxOwed / 1000).toFixed(0)}K owed`,
+                  price: p.estimatedMarketValue,
+                  notes: "",
+                  href: "/house-search",
+                })}
+                className={`flex items-center gap-1 rounded border px-2 py-1 text-xxs transition-colors ${
+                  saved ? "text-primary border-primary/50" : "hover:bg-accent"
+                }`}
+              >
+                {saved ? <BookmarkCheck className="h-3 w-3" /> : <Bookmark className="h-3 w-3" />}
+                {saved ? "Saved" : "Save"}
               </button>
               {!hasSkipTrace && (
                 <button

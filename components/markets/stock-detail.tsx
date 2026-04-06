@@ -21,7 +21,8 @@ import {
   ReferenceLine,
   Cell,
 } from "recharts";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, Bookmark, BookmarkCheck } from "lucide-react";
+import { useSaved } from "@/lib/saved-store";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -158,6 +159,8 @@ function ChartTooltip({ active, payload, chartType, previousClose }: CustomToolt
 export function StockDetail({ quote, onClose }: StockDetailProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("1D");
   const [chartType, setChartType] = useState<ChartType>("area");
+  const { isSaved, toggleSave } = useSaved();
+  const saved = isSaved("stock", quote.symbol);
   const { data: chartData, loading } = useChartData(quote.symbol, timeRange);
 
   const isUp = (chartData?.change ?? quote.change) >= 0;
@@ -262,12 +265,29 @@ export function StockDetail({ quote, onClose }: StockDetailProps) {
             </span>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="rounded-md p-1.5 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <X className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => toggleSave({
+              type: "stock",
+              title: quote.symbol,
+              keyMetric: `${formatPercent(quote.changePct)}`,
+              price: quote.price,
+              notes: "",
+              href: "/markets",
+            })}
+            className={`rounded-md p-1.5 transition-colors ${
+              saved ? "text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent"
+            }`}
+          >
+            {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+          </button>
+          <button
+            onClick={onClose}
+            className="rounded-md p-1.5 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* ─── Controls ─── */}

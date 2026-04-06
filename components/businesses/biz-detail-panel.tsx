@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { BusinessListing } from "@/lib/biz-data";
 import { formatCurrency } from "@/lib/format";
-import { X, Calculator, Bookmark, ExternalLink } from "lucide-react";
+import { X, Calculator, Bookmark, BookmarkCheck, ExternalLink } from "lucide-react";
+import { useSaved } from "@/lib/saved-store";
 
 function multipleColor(mult: number | null): string {
   if (mult == null) return "text-muted-foreground";
@@ -36,6 +37,8 @@ interface Props {
 
 export function BizDetailPanel({ listing, onClose, onNotesChange }: Props) {
   const [notes, setNotes] = useState(listing.notes);
+  const { isSaved, toggleSave } = useSaved();
+  const saved = isSaved("business", listing.title);
 
   return (
     <div className="fixed inset-y-0 right-0 z-50 flex w-[480px] flex-col border-l bg-card shadow-2xl animate-fade-in">
@@ -190,8 +193,21 @@ export function BizDetailPanel({ listing, onClose, onNotesChange }: Props) {
         <button className="flex-1 flex items-center justify-center gap-1.5 rounded bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:bg-primary/90 transition-colors">
           <Calculator className="h-3.5 w-3.5" /> Analyze Deal
         </button>
-        <button className="flex items-center justify-center gap-1.5 rounded border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors">
-          <Bookmark className="h-3.5 w-3.5" /> Save
+        <button
+          onClick={() => toggleSave({
+            type: "business",
+            title: listing.title,
+            keyMetric: listing.sdeCashFlow ? `CF: $${(listing.sdeCashFlow / 1000).toFixed(0)}K` : listing.industry,
+            price: listing.askingPrice,
+            notes: "",
+            href: "/businesses",
+          })}
+          className={`flex items-center justify-center gap-1.5 rounded border px-3 py-1.5 text-xs transition-colors ${
+            saved ? "text-primary border-primary/50" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+          }`}
+        >
+          {saved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+          {saved ? "Saved" : "Save"}
         </button>
       </div>
     </div>
