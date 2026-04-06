@@ -3,12 +3,19 @@
 import { useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+// leaflet CSS imported in globals.css
 import { formatCurrency } from "@/lib/format";
 import { taxDelinquentProperties, TaxDelinquentProperty } from "@/lib/mock-data";
 
 // Fix default marker icons in webpack/next.js
-delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
+if (typeof window !== "undefined") {
+  delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  });
+}
 
 const BOSTON_CENTER: [number, number] = [42.36, -71.06];
 const RADIUS_MILES = 100;
