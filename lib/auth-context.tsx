@@ -16,8 +16,10 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
-const VALID_USERNAME = "Zack";
-const VALID_PASSWORD = "@LunaTuna$";
+const VALID_USERS: Record<string, string> = {
+  "Zack": "@LunaTuna$",
+  "Flip": "KingChapo$",
+};
 const STORAGE_KEY = "zs_auth";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -35,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (username: string, password: string) => {
-    if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+    if (VALID_USERS[username] && VALID_USERS[username] === password) {
       const u = { username };
       setUser(u);
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(u));
