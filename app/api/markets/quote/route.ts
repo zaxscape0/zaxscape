@@ -1,91 +1,93 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Simple in-memory cache
+const FINNHUB_KEY = process.env.FINNHUB_API_KEY || "";
+
 const cache = new Map<string, { data: unknown; timestamp: number }>();
-const CACHE_TTL = 60_000; // 60 seconds
+const CACHE_TTL = 30_000; // 30 seconds
 
-async function fetchYahooQuote(symbol: string, range = "1d", interval = "5m") {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`;
+async function fetchFinnhubQuote(symbol: string) {
+  const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_KEY}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Finnhub returned ${res.status}`);
+  return res.json();
+}
 
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Yahoo Finance returned ${res.status}`);
-  }
-
+async function fetchFinnhubProfile(symbol: string) {
+  const url = `https://finnhub.io/api/v1/stock/profile2?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_KEY}`;
+  const res = await fetch(url);
+  if (!res.ok) return null;
   return res.json();
 }
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const symbols = searchParams.get("symbols")?.split(",") ?? [];
-  const range = searchParams.get("range") ?? "1d";
-  const interval = searchParams.get("interval") ?? "5m";
 
   if (symbols.length === 0) {
     return NextResponse.json({ error: "Missing symbols parameter" }, { status: 400 });
   }
 
+  if (!FINNHUB_KEY) {
+    return NextResponse.json({ error: "FINNHUB_API_KEY not configured" }, { status: 500 });
+  }
+
   try {
     const results: Record<string, unknown> = {};
 
-    await Promise.all(
-      symbols.map(async (symbol) => {
-        const cacheKey = `${symbol}:${range}:${interval}`;
-        const cached = cache.get(cacheKey);
+    // Process sequentially to respect rate limits (60/min)
+    for (const symbol of symbols.slice(0, 20)) {
+      const sym = symbol.trim().toUpperCase();
+      const cacheKey = `quote:${sym}`;
+      const cached = cache.get(cacheKey);
 
-        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-          results[symbol] = cached.data;
-          return;
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        results[sym] = cached.data;
+        continue;
+      }
+
+      try {
+        const [quote, profile] = await Promise.all([
+          fetchFinnhubQuote(sym),
+          fetchFinnhubProfile(sym),
+        ]);
+
+        // Finnhub quote: c=current, d=change, dp=change%, o=open, h=high, l=low, pc=prev close, t=timestamp
+        if (!quote || quote.c === 0) {
+          results[sym] = { error: "No data" };
+          continue;
         }
 
-        try {
-          const data = await fetchYahooQuote(symbol, range, interval);
-          const chart = data?.chart?.result?.[0];
+        const parsed = {
+          symbol: sym,
+          name: profile?.name || sym,
+          price: quote.c,
+          previousClose: quote.pc,
+          open: quote.o,
+          high: quote.h,
+          low: quote.l,
+          change: quote.d,
+          changePct: quote.dp,
+          marketCap: profile?.marketCapitalization ? profile.marketCapitalization * 1_000_000 : null,
+          currency: profile?.currency || "USD",
+          exchange: profile?.exchange || "",
+          industry: profile?.finnhubIndustry || "",
+          logo: profile?.logo || "",
+          // Keep these empty for backward compat — chart endpoint provides series data
+          timestamps: [],
+          closes: [],
+          opens: [],
+          highs: [],
+          lows: [],
+          volumes: [],
+        };
 
-          if (!chart) {
-            results[symbol] = { error: "No data" };
-            return;
-          }
-
-          const meta = chart.meta;
-          const quotes = chart.indicators?.quote?.[0] ?? {};
-          const timestamps = chart.timestamp ?? [];
-
-          const parsed = {
-            symbol: meta.symbol,
-            name: meta.shortName || meta.longName || symbol,
-            price: meta.regularMarketPrice,
-            previousClose: meta.chartPreviousClose ?? meta.previousClose,
-            open: quotes.open?.[0],
-            high: Math.max(...(quotes.high?.filter(Boolean) ?? [0])),
-            low: Math.min(...(quotes.low?.filter((v: number | null) => v != null) ?? [Infinity])),
-            volume: meta.regularMarketVolume,
-            change: meta.regularMarketPrice - (meta.chartPreviousClose ?? meta.previousClose),
-            changePct: ((meta.regularMarketPrice - (meta.chartPreviousClose ?? meta.previousClose)) / (meta.chartPreviousClose ?? meta.previousClose)) * 100,
-            marketCap: meta.marketCap,
-            currency: meta.currency,
-            exchange: meta.exchangeName,
-            timestamps,
-            closes: quotes.close ?? [],
-            opens: quotes.open ?? [],
-            highs: quotes.high ?? [],
-            lows: quotes.low ?? [],
-            volumes: quotes.volume ?? [],
-          };
-
-          cache.set(cacheKey, { data: parsed, timestamp: Date.now() });
-          results[symbol] = parsed;
-        } catch (e) {
-          console.error(e);
-          results[symbol] = { error: `Failed to fetch ${symbol}` };
-        }
-      })
-    );
+        cache.set(cacheKey, { data: parsed, timestamp: Date.now() });
+        results[sym] = parsed;
+      } catch (e) {
+        console.error(`Finnhub quote error for ${sym}:`, e);
+        results[sym] = { error: `Failed to fetch ${sym}` };
+      }
+    }
 
     return NextResponse.json(results);
   } catch (e) {

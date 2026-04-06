@@ -1,41 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Cache news per symbol for 5 minutes
+const FINNHUB_KEY = process.env.FINNHUB_API_KEY || "";
+
 const cache: Record<string, { data: NewsItem[]; fetchedAt: number }> = {};
-const CACHE_TTL = 300_000;
+const CACHE_TTL = 300_000; // 5 min
 
 interface NewsItem {
   title: string;
   url: string;
   source: string;
   publishedAt: string;
-}
-
-function parseRSSItems(xml: string, source: string): NewsItem[] {
-  const items: NewsItem[] = [];
-  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
-  let match;
-  while ((match = itemRegex.exec(xml)) !== null) {
-    const content = match[1];
-    const title = extractTag(content, "title");
-    const link = extractTag(content, "link");
-    const pubDate = extractTag(content, "pubDate");
-    if (title && link) {
-      items.push({
-        title: title.replace(/<[^>]+>/g, "").trim(),
-        url: link,
-        source,
-        publishedAt: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
-      });
-    }
-  }
-  return items;
-}
-
-function extractTag(xml: string, tag: string): string {
-  const regex = new RegExp(`<${tag}[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/${tag}>`);
-  const m = regex.exec(xml);
-  return m ? m[1].trim() : "";
+  summary?: string;
+  image?: string;
 }
 
 export async function GET(req: NextRequest) {
@@ -44,50 +20,46 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "symbol required" }, { status: 400 });
   }
 
+  if (!FINNHUB_KEY) {
+    return NextResponse.json({ error: "FINNHUB_API_KEY not configured" }, { status: 500 });
+  }
+
   const sym = symbol.toUpperCase().replace("^", "");
 
-  // Check cache
   if (cache[sym] && Date.now() - cache[sym].fetchedAt < CACHE_TTL) {
     return NextResponse.json({ news: cache[sym].data, cached: true });
   }
 
-  const allNews: NewsItem[] = [];
+  try {
+    // Get date range: last 7 days
+    const to = new Date().toISOString().split("T")[0];
+    const from = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
 
-  // Sources: Google News filtered by site for Reuters, Bloomberg, FT, Yahoo Finance
-  const feeds = [
-    { url: `https://news.google.com/rss/search?q=${encodeURIComponent(sym)}+site:reuters.com&hl=en-US&gl=US&ceid=US:en`, source: "Reuters" },
-    { url: `https://news.google.com/rss/search?q=${encodeURIComponent(sym)}+site:bloomberg.com&hl=en-US&gl=US&ceid=US:en`, source: "Bloomberg" },
-    { url: `https://news.google.com/rss/search?q=${encodeURIComponent(sym)}+site:ft.com&hl=en-US&gl=US&ceid=US:en`, source: "Financial Times" },
-    { url: `https://news.google.com/rss/search?q=${encodeURIComponent(sym)}+site:finance.yahoo.com&hl=en-US&gl=US&ceid=US:en`, source: "Yahoo Finance" },
-  ];
+    const res = await fetch(
+      `https://finnhub.io/api/v1/company-news?symbol=${encodeURIComponent(sym)}&from=${from}&to=${to}&token=${FINNHUB_KEY}`
+    );
 
-  for (const feed of feeds) {
-    try {
-      const res = await fetch(feed.url, {
-        headers: { "User-Agent": "ZaxScape/1.0" },
-        signal: AbortSignal.timeout(5000),
-      });
-      if (!res.ok) continue;
-      const xml = await res.text();
-      const items = parseRSSItems(xml, feed.source);
-      allNews.push(...items);
-    } catch {
-      continue;
+    if (!res.ok) {
+      return NextResponse.json({ error: "Failed to fetch news" }, { status: 502 });
     }
+
+    const articles = await res.json();
+
+    const news: NewsItem[] = (articles || []).slice(0, 8).map(
+      (a: { headline: string; url: string; source: string; datetime: number; summary: string; image: string }) => ({
+        title: a.headline,
+        url: a.url,
+        source: a.source,
+        publishedAt: new Date(a.datetime * 1000).toISOString(),
+        summary: a.summary?.substring(0, 200),
+        image: a.image,
+      })
+    );
+
+    cache[sym] = { data: news, fetchedAt: Date.now() };
+    return NextResponse.json({ news, cached: false });
+  } catch (e) {
+    console.error("Finnhub news error:", e);
+    return NextResponse.json({ error: "Failed to fetch news" }, { status: 500 });
   }
-
-  // Sort by date, deduplicate by title prefix
-  allNews.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
-  const seen = new Set<string>();
-  const deduped = allNews.filter((n) => {
-    const key = n.title.substring(0, 40).toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-
-  const top5 = deduped.slice(0, 5);
-  cache[sym] = { data: top5, fetchedAt: Date.now() };
-
-  return NextResponse.json({ news: top5, cached: false });
 }

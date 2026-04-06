@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const FINNHUB_KEY = process.env.FINNHUB_API_KEY || "";
+
 const cache = new Map<string, { data: unknown; timestamp: number }>();
 
 const INTRADAY_RANGES = new Set(["1d", "5d"]);
@@ -8,30 +10,41 @@ function getCacheTTL(range: string): number {
   return INTRADAY_RANGES.has(range) ? 60_000 : 300_000;
 }
 
-const VALID_RANGES = new Set(["1d", "5d", "1mo", "3mo", "6mo", "ytd", "1y", "5y"]);
-const VALID_INTERVALS = new Set(["1m", "2m", "5m", "15m", "30m", "60m", "1h", "1d", "1wk", "1mo"]);
+// Map our range param to Finnhub resolution + from/to timestamps
+function getRangeParams(range: string): { resolution: string; from: number; to: number } {
+  const now = Math.floor(Date.now() / 1000);
+  const day = 86400;
 
-async function fetchYahooChart(symbol: string, range: string, interval: string) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}&includePrePost=false`;
-
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Yahoo Finance returned ${res.status}`);
+  switch (range) {
+    case "1d":
+      return { resolution: "5", from: now - day, to: now };
+    case "5d":
+      return { resolution: "15", from: now - 5 * day, to: now };
+    case "1mo":
+      return { resolution: "60", from: now - 30 * day, to: now };
+    case "3mo":
+      return { resolution: "D", from: now - 90 * day, to: now };
+    case "6mo":
+      return { resolution: "D", from: now - 180 * day, to: now };
+    case "ytd": {
+      const jan1 = Math.floor(new Date(new Date().getFullYear(), 0, 1).getTime() / 1000);
+      return { resolution: "D", from: jan1, to: now };
+    }
+    case "1y":
+      return { resolution: "D", from: now - 365 * day, to: now };
+    case "5y":
+      return { resolution: "W", from: now - 5 * 365 * day, to: now };
+    default:
+      return { resolution: "D", from: now - 30 * day, to: now };
   }
-
-  return res.json();
 }
+
+const VALID_RANGES = new Set(["1d", "5d", "1mo", "3mo", "6mo", "ytd", "1y", "5y"]);
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const symbol = searchParams.get("symbol");
   const range = searchParams.get("range") ?? "1d";
-  const interval = searchParams.get("interval") ?? "5m";
 
   if (!symbol) {
     return NextResponse.json({ error: "Missing symbol parameter" }, { status: 400 });
@@ -41,11 +54,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid range" }, { status: 400 });
   }
 
-  if (!VALID_INTERVALS.has(interval)) {
-    return NextResponse.json({ error: "Invalid interval" }, { status: 400 });
+  if (!FINNHUB_KEY) {
+    return NextResponse.json({ error: "FINNHUB_API_KEY not configured" }, { status: 500 });
   }
 
-  const cacheKey = `chart:${symbol}:${range}:${interval}`;
+  const sym = symbol.toUpperCase();
+  const cacheKey = `chart:${sym}:${range}`;
   const cached = cache.get(cacheKey);
   const ttl = getCacheTTL(range);
 
@@ -54,45 +68,51 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const data = await fetchYahooChart(symbol, range, interval);
-    const chart = data?.chart?.result?.[0];
+    const { resolution, from, to } = getRangeParams(range);
 
-    if (!chart) {
+    // Fetch candles + quote in parallel
+    const [candleRes, quoteRes] = await Promise.all([
+      fetch(
+        `https://finnhub.io/api/v1/stock/candle?symbol=${encodeURIComponent(sym)}&resolution=${resolution}&from=${from}&to=${to}&token=${FINNHUB_KEY}`
+      ),
+      fetch(
+        `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(sym)}&token=${FINNHUB_KEY}`
+      ),
+    ]);
+
+    if (!candleRes.ok) {
+      return NextResponse.json({ error: "Failed to fetch candle data" }, { status: 502 });
+    }
+
+    const candle = await candleRes.json();
+    const quote = quoteRes.ok ? await quoteRes.json() : {};
+
+    if (candle.s === "no_data" || !candle.t) {
       return NextResponse.json({ error: "No data available" }, { status: 404 });
     }
 
-    const meta = chart.meta;
-    const quotes = chart.indicators?.quote?.[0] ?? {};
-    const timestamps: number[] = chart.timestamp ?? [];
-
     const result = {
-      symbol: meta.symbol,
-      name: meta.shortName || meta.longName || symbol,
-      price: meta.regularMarketPrice,
-      previousClose: meta.chartPreviousClose ?? meta.previousClose,
-      open: meta.regularMarketOpen,
-      high: meta.regularMarketDayHigh,
-      low: meta.regularMarketDayLow,
-      volume: meta.regularMarketVolume,
-      avgVolume: meta.averageDailyVolume3Month,
-      marketCap: meta.marketCap,
-      currency: meta.currency,
-      exchange: meta.exchangeName,
-      change: meta.regularMarketPrice - (meta.chartPreviousClose ?? meta.previousClose),
-      changePct:
-        ((meta.regularMarketPrice - (meta.chartPreviousClose ?? meta.previousClose)) /
-          (meta.chartPreviousClose ?? meta.previousClose)) *
-        100,
-      timestamps,
-      open_series: quotes.open ?? [],
-      high_series: quotes.high ?? [],
-      low_series: quotes.low ?? [],
-      close_series: quotes.close ?? [],
-      volume_series: quotes.volume ?? [],
+      symbol: sym,
+      name: sym,
+      price: quote.c || candle.c?.[candle.c.length - 1] || 0,
+      previousClose: quote.pc || 0,
+      open: quote.o || candle.o?.[0] || 0,
+      high: quote.h || Math.max(...(candle.h || [0])),
+      low: quote.l || Math.min(...(candle.l || [Infinity])),
+      volume: candle.v?.reduce((a: number, b: number) => a + b, 0) || 0,
+      change: quote.d || 0,
+      changePct: quote.dp || 0,
+      currency: "USD",
+      exchange: "",
+      timestamps: candle.t,
+      open_series: candle.o,
+      high_series: candle.h,
+      low_series: candle.l,
+      close_series: candle.c,
+      volume_series: candle.v,
     };
 
     cache.set(cacheKey, { data: result, timestamp: Date.now() });
-
     return NextResponse.json(result);
   } catch (e) {
     console.error("Chart API error:", e);
