@@ -1,4 +1,5 @@
-export function formatCurrency(value: number, decimals = 2): string {
+export function formatCurrency(value: number | null | undefined, decimals = 2): string {
+  if (value == null || isNaN(value)) return "—";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -7,18 +8,21 @@ export function formatCurrency(value: number, decimals = 2): string {
   }).format(value);
 }
 
-export function formatNumber(value: number, decimals = 2): string {
+export function formatNumber(value: number | null | undefined, decimals = 2): string {
+  if (value == null || isNaN(value)) return "—";
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(value);
 }
 
-export function formatPercent(value: number, decimals = 2): string {
+export function formatPercent(value: number | null | undefined, decimals = 2): string {
+  if (value == null || isNaN(value)) return "—";
   return `${value >= 0 ? "+" : ""}${value.toFixed(decimals)}%`;
 }
 
-export function formatCompact(value: number): string {
+export function formatCompact(value: number | null | undefined): string {
+  if (value == null || isNaN(value)) return "—";
   if (value >= 1e12) return `${(value / 1e12).toFixed(2)}T`;
   if (value >= 1e9) return `${(value / 1e9).toFixed(2)}B`;
   if (value >= 1e6) return `${(value / 1e6).toFixed(2)}M`;
@@ -26,7 +30,7 @@ export function formatCompact(value: number): string {
   return value.toFixed(0);
 }
 
-export function formatVolume(value: number): string {
+export function formatVolume(value: number | null | undefined): string {
   return formatCompact(value);
 }
 
