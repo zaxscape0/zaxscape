@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
 /**
- * Live market futures via Yahoo Finance v8 API (no key required).
+ * Live market futures via Yahoo Finance v8 chart API.
  * Returns an array of { symbol, name, price, change, changePct }.
- * Cached server-side for 30s to avoid hammering Yahoo.
+ * Cached server-side for 30s.
  */
 
 const SYMBOLS = [
@@ -26,57 +26,75 @@ interface CacheEntry {
 let cached: CacheEntry | null = null;
 const CACHE_TTL = 30_000;
 
+async function fetchChart(yahooSymbol: string) {
+  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?range=1d&interval=5m`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": "Mozilla/5.0" },
+  });
+  if (!res.ok) return null;
+  const json = await res.json();
+  const meta = json?.chart?.result?.[0]?.meta;
+  if (!meta) return null;
+  return {
+    price: meta.regularMarketPrice ?? null,
+    previousClose: meta.chartPreviousClose ?? meta.previousClose ?? null,
+  };
+}
+
 export async function GET() {
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return NextResponse.json(cached.data);
   }
 
   try {
-    const symbolStr = SYMBOLS.map((s) => s.yahoo).join(",");
-    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbolStr}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,regularMarketPreviousClose`;
-
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-      },
-      next: { revalidate: 30 },
-    });
-
-    if (!res.ok) {
-      console.error(`Yahoo Finance returned ${res.status}`);
-      return NextResponse.json({ error: "Upstream error" }, { status: 502 });
-    }
-
-    const json = await res.json();
-    const quotes = json?.quoteResponse?.result ?? [];
-
-    const results = SYMBOLS.map((sym) => {
-      const raw = sym.yahoo.replace("%5E", "^");
-      const q = quotes.find(
-        (r: Record<string, unknown>) => r.symbol === raw
-      );
-      if (!q) {
-        return {
-          symbol: sym.display,
-          name: sym.name,
-          price: null,
-          change: null,
-          changePct: null,
-        };
-      }
-      return {
-        symbol: sym.display,
-        name: sym.name,
-        price: q.regularMarketPrice ?? null,
-        change: q.regularMarketChange ?? null,
-        changePct: q.regularMarketChangePercent ?? null,
-      };
-    });
+    const results = await Promise.all(
+      SYMBOLS.map(async (sym) => {
+        try {
+          const data = await fetchChart(sym.yahoo);
+          if (!data || data.price == null) {
+            return {
+              symbol: sym.display,
+              name: sym.name,
+              price: null,
+              change: null,
+              changePct: null,
+            };
+          }
+          const change =
+            data.previousClose != null
+              ? data.price - data.previousClose
+              : null;
+          const changePct =
+            change != null && data.previousClose
+              ? (change / data.previousClose) * 100
+              : null;
+          return {
+            symbol: sym.display,
+            name: sym.name,
+            price: data.price,
+            change: change != null ? Math.round(change * 100) / 100 : null,
+            changePct:
+              changePct != null ? Math.round(changePct * 100) / 100 : null,
+          };
+        } catch {
+          return {
+            symbol: sym.display,
+            name: sym.name,
+            price: null,
+            change: null,
+            changePct: null,
+          };
+        }
+      })
+    );
 
     cached = { data: results, timestamp: Date.now() };
     return NextResponse.json(results);
   } catch (e) {
     console.error("Futures fetch error:", e);
-    return NextResponse.json({ error: "Failed to fetch futures" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch futures" },
+      { status: 500 }
+    );
   }
 }
