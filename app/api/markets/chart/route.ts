@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const FINNHUB_KEY = process.env.FINNHUB_API_KEY || "";
-
 const cache = new Map<string, { data: unknown; timestamp: number }>();
 
 const INTRADAY_RANGES = new Set(["1d", "5d"]);
@@ -10,36 +8,19 @@ function getCacheTTL(range: string): number {
   return INTRADAY_RANGES.has(range) ? 60_000 : 300_000;
 }
 
-// Map our range param to Finnhub resolution + from/to timestamps
-function getRangeParams(range: string): { resolution: string; from: number; to: number } {
-  const now = Math.floor(Date.now() / 1000);
-  const day = 86400;
+// Map our range/interval params to Yahoo Finance format
+const YAHOO_RANGE_MAP: Record<string, { range: string; interval: string }> = {
+  "1d":  { range: "1d",  interval: "5m"  },
+  "5d":  { range: "5d",  interval: "15m" },
+  "1mo": { range: "1mo", interval: "1h"  },
+  "3mo": { range: "3mo", interval: "1d"  },
+  "6mo": { range: "6mo", interval: "1d"  },
+  "ytd": { range: "ytd", interval: "1d"  },
+  "1y":  { range: "1y",  interval: "1d"  },
+  "5y":  { range: "5y",  interval: "1wk" },
+};
 
-  switch (range) {
-    case "1d":
-      return { resolution: "5", from: now - day, to: now };
-    case "5d":
-      return { resolution: "15", from: now - 5 * day, to: now };
-    case "1mo":
-      return { resolution: "60", from: now - 30 * day, to: now };
-    case "3mo":
-      return { resolution: "D", from: now - 90 * day, to: now };
-    case "6mo":
-      return { resolution: "D", from: now - 180 * day, to: now };
-    case "ytd": {
-      const jan1 = Math.floor(new Date(new Date().getFullYear(), 0, 1).getTime() / 1000);
-      return { resolution: "D", from: jan1, to: now };
-    }
-    case "1y":
-      return { resolution: "D", from: now - 365 * day, to: now };
-    case "5y":
-      return { resolution: "W", from: now - 5 * 365 * day, to: now };
-    default:
-      return { resolution: "D", from: now - 30 * day, to: now };
-  }
-}
-
-const VALID_RANGES = new Set(["1d", "5d", "1mo", "3mo", "6mo", "ytd", "1y", "5y"]);
+const VALID_RANGES = new Set(Object.keys(YAHOO_RANGE_MAP));
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -54,10 +35,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid range" }, { status: 400 });
   }
 
-  if (!FINNHUB_KEY) {
-    return NextResponse.json({ error: "FINNHUB_API_KEY not configured" }, { status: 500 });
-  }
-
   const sym = symbol.toUpperCase();
   const cacheKey = `chart:${sym}:${range}`;
   const cached = cache.get(cacheKey);
@@ -68,48 +45,79 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { resolution, from, to } = getRangeParams(range);
+    const yahooParams = YAHOO_RANGE_MAP[range];
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=${yahooParams.range}&interval=${yahooParams.interval}&includePrePost=false`;
 
-    // Fetch candles + quote in parallel
-    const [candleRes, quoteRes] = await Promise.all([
-      fetch(
-        `https://finnhub.io/api/v1/stock/candle?symbol=${encodeURIComponent(sym)}&resolution=${resolution}&from=${from}&to=${to}&token=${FINNHUB_KEY}`
-      ),
-      fetch(
-        `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(sym)}&token=${FINNHUB_KEY}`
-      ),
-    ]);
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0" },
+    });
 
-    if (!candleRes.ok) {
-      return NextResponse.json({ error: "Failed to fetch candle data" }, { status: 502 });
+    if (!res.ok) {
+      return NextResponse.json({ error: "Failed to fetch chart data" }, { status: 502 });
     }
 
-    const candle = await candleRes.json();
-    const quote = quoteRes.ok ? await quoteRes.json() : {};
+    const json = await res.json();
+    const chartResult = json?.chart?.result?.[0];
 
-    if (candle.s === "no_data" || !candle.t) {
+    if (!chartResult) {
       return NextResponse.json({ error: "No data available" }, { status: 404 });
     }
 
+    const meta = chartResult.meta;
+    const timestamps: number[] = chartResult.timestamp ?? [];
+    const indicators = chartResult.indicators?.quote?.[0] ?? {};
+
+    const openSeries: (number | null)[] = indicators.open ?? [];
+    const highSeries: (number | null)[] = indicators.high ?? [];
+    const lowSeries: (number | null)[] = indicators.low ?? [];
+    const closeSeries: (number | null)[] = indicators.close ?? [];
+    const volumeSeries: (number | null)[] = indicators.volume ?? [];
+
+    // Filter out null entries
+    const validIndices: number[] = [];
+    for (let i = 0; i < timestamps.length; i++) {
+      if (closeSeries[i] != null) validIndices.push(i);
+    }
+
+    const filteredTimestamps = validIndices.map((i) => timestamps[i]);
+    const filteredOpen = validIndices.map((i) => openSeries[i]);
+    const filteredHigh = validIndices.map((i) => highSeries[i]);
+    const filteredLow = validIndices.map((i) => lowSeries[i]);
+    const filteredClose = validIndices.map((i) => closeSeries[i]);
+    const filteredVolume = validIndices.map((i) => volumeSeries[i]);
+
+    const lastClose = filteredClose[filteredClose.length - 1] ?? 0;
+    const previousClose = meta.chartPreviousClose ?? meta.previousClose ?? 0;
+    const price = meta.regularMarketPrice ?? lastClose;
+    const change = previousClose ? price - previousClose : 0;
+    const changePct = previousClose ? (change / previousClose) * 100 : 0;
+
+    // Compute session high/low from data
+    const allHighs = filteredHigh.filter((v): v is number => v != null);
+    const allLows = filteredLow.filter((v): v is number => v != null);
+    const totalVolume = filteredVolume.reduce((a: number, b) => a + (b ?? 0), 0);
+
     const result = {
       symbol: sym,
-      name: sym,
-      price: quote.c || candle.c?.[candle.c.length - 1] || 0,
-      previousClose: quote.pc || 0,
-      open: quote.o || candle.o?.[0] || 0,
-      high: quote.h || Math.max(...(candle.h || [0])),
-      low: quote.l || Math.min(...(candle.l || [Infinity])),
-      volume: candle.v?.reduce((a: number, b: number) => a + b, 0) || 0,
-      change: quote.d || 0,
-      changePct: quote.dp || 0,
-      currency: "USD",
-      exchange: "",
-      timestamps: candle.t,
-      open_series: candle.o,
-      high_series: candle.h,
-      low_series: candle.l,
-      close_series: candle.c,
-      volume_series: candle.v,
+      name: meta.longName || meta.shortName || sym,
+      price,
+      previousClose,
+      open: meta.regularMarketDayLow != null ? filteredOpen[0] ?? 0 : 0,
+      high: allHighs.length ? Math.max(...allHighs) : meta.regularMarketDayHigh ?? 0,
+      low: allLows.length ? Math.min(...allLows) : meta.regularMarketDayLow ?? 0,
+      volume: totalVolume,
+      avgVolume: meta.averageDailyVolume3Month ?? 0,
+      marketCap: meta.marketCap ?? 0,
+      change,
+      changePct,
+      currency: meta.currency ?? "USD",
+      exchange: meta.fullExchangeName ?? meta.exchangeName ?? "",
+      timestamps: filteredTimestamps,
+      open_series: filteredOpen,
+      high_series: filteredHigh,
+      low_series: filteredLow,
+      close_series: filteredClose,
+      volume_series: filteredVolume,
     };
 
     cache.set(cacheKey, { data: result, timestamp: Date.now() });
