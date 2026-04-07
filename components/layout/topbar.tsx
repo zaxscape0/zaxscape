@@ -1,16 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { Bell, Moon, Sun, Search, LogOut } from "lucide-react";
+import { Bell, Moon, Sun, Search, LogOut, Menu } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth-context";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sidebar } from "./sidebar";
 
 export function TopBar() {
   const { theme, setTheme } = useTheme();
   const { signOut } = useAuth();
   const [mounted, setMounted] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
@@ -18,21 +21,37 @@ export function TopBar() {
 
   return (
     <header className="flex h-10 items-center justify-between border-b bg-card px-3">
-      {/* Command palette trigger */}
-      <button
-        onClick={() => {
-          document.dispatchEvent(
-            new KeyboardEvent("keydown", { key: "k", metaKey: true })
-          );
-        }}
-        className="flex items-center gap-2 rounded-md border bg-background px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <Search className="h-3.5 w-3.5" />
-        <span>Search...</span>
-        <kbd className="ml-4 rounded bg-muted px-1 py-0.5 text-xxs font-mono">
-          ⌘K
-        </kbd>
-      </button>
+      <div className="flex items-center gap-2">
+        {/* Mobile hamburger menu */}
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="md:hidden">
+              <Menu className="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-80 p-0">
+            <div className="h-full">
+              <Sidebar isMobile />
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Command palette trigger */}
+        <button
+          onClick={() => {
+            document.dispatchEvent(
+              new KeyboardEvent("keydown", { key: "k", metaKey: true })
+            );
+          }}
+          className="flex items-center gap-2 rounded-md border bg-background px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Search className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Search...</span>
+          <kbd className="ml-4 hidden md:inline rounded bg-muted px-1 py-0.5 text-xxs font-mono">
+            ⌘K
+          </kbd>
+        </button>
+      </div>
 
       <div className="flex items-center gap-1">
         {/* Alerts */}
