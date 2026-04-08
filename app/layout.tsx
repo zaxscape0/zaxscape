@@ -25,6 +25,10 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "ZaxScape — Financial Command Center",
   description: "Personal financial command center & local market intelligence",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
